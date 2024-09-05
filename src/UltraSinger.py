@@ -21,7 +21,7 @@ from modules.Audio.convert_audio import convert_audio_to_mono_wav, convert_wav_t
 from modules.Audio.youtube import (
     download_from_youtube,
 )
-
+from modules.Audio.change_pitch import change_pitch
 from modules.console_colors import (
     ULTRASINGER_HEAD,
     blue_highlighted,
