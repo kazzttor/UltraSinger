@@ -14,69 +14,70 @@
 
 # UltraSinger
 
-> ⚠️ _This project is still under development!_
+> ⚠️ _Este projeto parmanece em desenvolvimento!_
 
-UltraSinger is a tool to automatically create UltraStar.txt, midi and notes from music. 
-It automatically pitches UltraStar files, adding text and tapping to UltraStar files and creates separate UltraStar karaoke files.
-It also can re-pitch current UltraStar files and calculates the possible in-game score.
+_Este é um fork do projeto UltraSinger que traduz a interface do projeto para português do Brasil e adiciona a possibilidade de criar uma versão do karaoke com notas transposta (ainda em desenvolvimento)._
 
-Multiple AI models are used to extract text from the voice and to determine the pitch.
+UltraSinger é uma ferramenta que cria aytomaticamente UltraStar.txt, midi and notes de uma música. 
+Ele lança automaticamente arquivos UltraStar, adicionando texto e tocando em arquivos UltraStar e cria arquivos de karaokê UltraStar separados.
+Ele também pode relançar os arquivos UltraStar atuais e calcular a possível pontuação no jogo.
 
-Please mention UltraSinger in your UltraStar.txt file if you use it. It helps others find this tool, and it helps this tool get improved and maintained.
-You should only use it on Creative Commons licensed songs.
+Vários modelos de IA são usados para extrair texto da voz e determinar o tom.
 
-## ❤️ Support
-There are many ways to support this project. Starring ⭐️ the repo is just one 🙏
+Por favor, mencione o UltraSinger em seu arquivo UltraStar.txt se você usá-lo. Isso ajuda outras pessoas a encontrar essa ferramenta e ajuda essa ferramenta a ser aprimorada e mantida. Você só deve usá-lo em músicas licenciadas pela Creative Commons.
 
-You can also support this work on <a href="https://github.com/sponsors/rakuri255">GitHub sponsors</a> or <a href="https://patreon.com/Rakuri">Patreon</a> or <a href="https://www.buymeacoffee.com/rakuri255" target="_blank">Buy Me a Coffee</a>.
+## ❤️ Suporte
+Existem muitas maneiras de apoiar este projeto. Atribuir estrelas ⭐️ o repositório é apenas um 🙏
 
-This will help me a lot to keep this project alive and improve it.
+Você também pode apoiar este trabalho em <a href="https://github.com/sponsors/rakuri255">Apoiadores do Github</a> ou <a href="https://patreon.com/Rakuri">Patreon</a> ou <a href="https://www.buymeacoffee.com/rakuri255" target="_blank">Buy Me a Coffee</a>.
+
+Isso vai me ajudar muito a manter este projeto vivo e melhorá-lo.
 
 <a href="https://www.buymeacoffee.com/rakuri255" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 <a href="https://patreon.com/Rakuri"><img src="https://raw.githubusercontent.com/rakuri255/UltraSinger/main/assets/patreon.png" alt="Become a Patron" style="height: 60px !important;width: 217px !important;"/> </a>
 <a href="https://github.com/sponsors/rakuri255"><img src="https://raw.githubusercontent.com/rakuri255/UltraSinger/main/assets/mona-heart-featured.webp" alt="GitHub Sponsor" style="height: 60px !important;width: auto;"/> </a>
 
-## Table of Contents
+## Índice
 
 - [UltraSinger](#ultrasinger)
-  - [❤️ Support](#️-support)
-  - [Table of Contents](#table-of-contents)
-  - [💻 How to use this source code](#-how-to-use-this-source-code)
-    - [Installation](#installation)
-    - [Run](#run)
-  - [📖 How to use the App](#-how-to-use-the-app)
-    - [🎶 Input](#-input)
-      - [Audio (full automatic)](#audio-full-automatic)
-        - [Local file](#local-file)
+  - [❤️ Suporte](#️-support)
+  - [Índice](#table-of-contents)
+  - [💻 Como usar o código-fonte](#-how-to-use-this-source-code)
+    - [Instalação](#installation)
+    - [Executando](#run)
+  - [📖 Como usar](#-how-to-use-the-app)
+    - [🎶 Entrada](#-input)
+      - [Áudio (totalmente automático)](#audio-full-automatic)
+        - [Arquivo Local](#local-file)
         - [Youtube](#youtube)
-      - [UltraStar (re-pitch)](#ultrastar-re-pitch)
-    - [🗣 Transcriber](#-transcriber)
+      - [UltraStar (regerar)](#ultrastar-re-pitch)
+    - [🗣 Transcritor](#-transcriber)
       - [Whisper](#whisper)
-        - [Whisper languages](#whisper-languages)
-      - [✍️ Hyphenation](#️-hyphenation)
+        - [Idiomas do Whisper](#whisper-languages)
+      - [✍️ Hifenização](#️-hyphenation)
     - [👂 Pitcher](#-pitcher)
-    - [👄 Separation](#-separation)
-    - [Sheet Music](#sheet-music)
-    - [Format Version](#format-version)
-    - [🏆 Ultrastar Score Calculation](#-ultrastar-score-calculation)
-    - [📟 Use GPU](#-use-gpu)
-      - [Considerations for Windows users](#considerations-for-windows-users)
-      - [Info](#info)
-      - [Docker](#docker)
+    - [👄 Separação](#-separation)
+    - [Planilha da música](#sheet-music)
+    - [Versão de formato](#format-version)
+    - [🏆 Cálculo de pontuação do UltraStar](#-ultrastar-score-calculation)
+    - [📟 Uso da GPU](#-use-gpu)
+      - [Consideraçoes para usuários do Windows](#considerations-for-windows-users)
+      - [Informações](#info)
+      - [Uso com Docker](#docker)
 
-## 💻 How to use this source code
+## 💻 Como usar o código-fonte
 
-### Installation
+### Instalação
 
-* Install Python 3.10 **(older and newer versions has some breaking changes)**. [Download](https://www.python.org/downloads/)
-* Also install ffmpeg separately with PATH. [Download](https://www.ffmpeg.org/download.html)
-* Go to folder `install` and run install script for your OS.
-  * Choose `GPU` if you have an nvidia CUDA GPU.
-  * Choose `CPU` if you don't have an nvidia CUDA GPU.
+* Instale o Python 3.10 **(Versões anteriores e recentes podem apresentar problemas)**. [Download](https://www.python.org/downloads/)
+* Instale também ffmpeg separadamente com registro no PATH. [Download](https://www.ffmpeg.org/download.html)
+* Vá para a pasta `install` e execute o script de sistalação de acordo com o Sistema Operacional.
+  * Escolha `GPU` se possui uma GPU nvidia CUDA.
+  * Escolha `CPU` se não possui uma GPU nvidia CUDA.
 
-### Run
+### Executando
 
-* In root folder just run `run_on_windows.bat` or `run_on_linux.sh` to start the app.
+* Na pasta raiz execute `run_on_windows.bat` ou `run_on_linux.sh` para iniciar o aplicativo.
 * Now you can use the UltraSinger source code with `py UltraSinger.py [opt] [mode] [transcription] [pitcher] [extra]`. See [How to use](#how-to-use) for more information.
 
 ## 📖 How to use the App
