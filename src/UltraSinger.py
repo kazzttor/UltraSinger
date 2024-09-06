@@ -11,6 +11,7 @@ from packaging import version
 from modules import os_helper
 from modules.Audio.denoise import denoise_vocal_audio
 from modules.Audio.separation import separate_vocal_from_audio
+from modules.Audio.change_pitch import change_pitch
 from modules.Audio.vocal_chunks import (
     create_audio_chunks_from_transcribed_data,
     create_audio_chunks_from_ultrastar_data,
@@ -100,7 +101,6 @@ def add_hyphen_to_data(
     return new_data
 
 
-# Todo: Unused
 def correct_words(recognized_words, word_list_file):
     """Docstring"""
     with open(word_list_file, "r", encoding="utf-8") as file:
@@ -247,7 +247,6 @@ def TranscribeAudio(process_data):
     process_data.transcribed_data = transcription_result.transcribed_data
 
     # Hyphen
-    # Todo: Is it really unnecessary?
     remove_unecessary_punctuations(process_data.transcribed_data)
     if settings.hyphenation:
         hyphen_words = hyphenate_each_word(process_data.media_info.language, process_data.transcribed_data)
@@ -263,41 +262,27 @@ def TranscribeAudio(process_data):
 def CreateUltraStarTxt(process_data: ProcessData):
     # Move instrumental and vocals
     if settings.create_karaoke and version.parse(settings.format_version.value) < version.parse(FormatVersion.V1_1_0.value):
-        karaoke_output_path = os.path.join(settings.output_folder_path, process_data.basename + " [Karaoke].mp3")
+        karaoke_output_path = os.path.join(settings.output_folder_path, f'{process_data.basename}_karaoke.mp3')
         convert_wav_to_mp3(process_data.process_data_paths.instrumental_audio_file_path, karaoke_output_path)
+        settings.audio_output_file_path = karaoke_output_path
 
-    if version.parse(settings.format_version.value) >= version.parse(FormatVersion.V1_1_0.value):
-        instrumental_output_path = os.path.join(settings.output_folder_path,
-                                                process_data.basename + " [Instrumental].mp3")
-        convert_wav_to_mp3(process_data.process_data_paths.instrumental_audio_file_path, instrumental_output_path)
-        vocals_output_path = os.path.join(settings.output_folder_path, process_data.basename + " [Vocals].mp3")
-        convert_wav_to_mp3(process_data.process_data_paths.vocals_audio_file_path, vocals_output_path)
-
-    # Create Ultrastar txt
     if not settings.ignore_audio:
-        ultrastar_file_output = create_ultrastar_txt_from_automation(
-            process_data.basename,
-            settings.output_folder_path,
-            process_data.midi_segments,
-            process_data.media_info,
-            settings.format_version,
-            settings.create_karaoke,
-            settings.APP_VERSION
-        )
+        transcribed_data_txt = create_ultrastar_txt_from_automation(process_data.media_info, process_data.transcribed_data,
+                                                                    process_data.pitched_data,
+                                                                    process_data.midi_segments, settings.format_version)
     else:
-        ultrastar_file_output = create_ultrastar_txt_from_midi_segments(
-            settings.output_folder_path, settings.input_file_path, process_data.media_info.title, process_data.midi_segments
-        )
+        transcribed_data_txt = create_ultrastar_txt_from_midi_segments(process_data.media_info, process_data.parsed_file,
+                                                                       process_data.midi_segments, settings.format_version)
 
-    # Calc Points
-    simple_score = None
-    accurate_score = None
-    if settings.calculate_score:
-        simple_score, accurate_score = calculate_score_points(process_data, ultrastar_file_output)
+    # Write Ultrastar txt
+    ultrastar_file_output = os_helper.create_folder(
+        os.path.join(settings.output_folder_path, process_data.basename))
+    ultrastar_file_output = os.path.join(ultrastar_file_output, f'{process_data.basename}.txt')
+    ultrastar_writer.write_to_file(
+        process_data.media_info, transcribed_data_txt, ultrastar_file_output, FILE_ENCODING
+    )
+    accurate_score, simple_score = calculate_score_points(process_data.pitched_data, process_data.transcribed_data)
 
-    # Add calculated score to Ultrastar txt
-    #Todo: Missing Karaoke
-    ultrastar_writer.add_score_to_ultrastar_txt(ultrastar_file_output, simple_score)
     return accurate_score, simple_score, ultrastar_file_output
 
 
@@ -319,8 +304,20 @@ def CreateProcessAudio(process_data) -> str:
         settings.skip_cache_vocal_separation
     )
     process_data.process_data_paths.vocals_audio_file_path = os.path.join(audio_separation_folder_path, "vocals.wav")
-    process_data.process_data_paths.instrumental_audio_file_path = os.path.join(audio_separation_folder_path,
-                                                                                "no_vocals.wav")
+    process_data.process_data_paths.instrumental_audio_file_path = os.path.join(audio_separation_folder_path, "no_vocals.wav")
+
+    # Verificar se o parâmetro --changetone foi passado
+    if settings.changetone is not None:
+        # Aplicar a mudança de tom nos arquivos de vocal e instrumental
+        print(f"{ULTRASINGER_HEAD} {blue_highlighted(f'Changing tone by {settings.changetone} semitones')}")
+        process_data.process_data_paths.vocals_audio_file_path = change_pitch(
+            process_data.process_data_paths.vocals_audio_file_path,
+            settings.changetone
+        )
+        process_data.process_data_paths.instrumental_audio_file_path = change_pitch(
+            process_data.process_data_paths.instrumental_audio_file_path,
+            settings.changetone
+        )
 
     if settings.use_separated_vocal:
         input_path = process_data.process_data_paths.vocals_audio_file_path
@@ -349,231 +346,36 @@ def CreateProcessAudio(process_data) -> str:
     return mute_output_path
 
 
-def transcribe_audio(cache_folder_path: str, processing_audio_path: str) -> TranscriptionResult:
-    """Transcribe audio with AI"""
-    transcription_result = None
-    if settings.transcriber == "whisper":
-        transcription_config = f"{settings.transcriber}_{settings.whisper_model.value}_{settings.pytorch_device}_{settings.whisper_align_model}_{settings.whisper_align_model}_{settings.whisper_batch_size}_{settings.whisper_compute_type}_{settings.language}"
-        transcription_path = os.path.join(cache_folder_path, f"{transcription_config}.json")
-        cached_transcription_available = check_file_exists(transcription_path)
-        if settings.skip_cache_transcription or not cached_transcription_available:
-            transcription_result = transcribe_with_whisper(
-                processing_audio_path,
-                settings.whisper_model,
-                settings.pytorch_device,
-                settings.whisper_align_model,
-                settings.whisper_batch_size,
-                settings.whisper_compute_type,
-                settings.language,
-            )
-            with open(transcription_path, "w", encoding=FILE_ENCODING) as file:
-                file.write(transcription_result.to_json())
-        else:
-            print(f"{ULTRASINGER_HEAD} {green_highlighted('cache')} reusing cached transcribed data")
-            with open(transcription_path) as file:
-                json = file.read()
-                transcription_result = TranscriptionResult.from_json(json)
-    else:
-        raise NotImplementedError
-    return transcription_result
+def parse_args():
+    """Parser para adicionar o parâmetro --changetone"""
+    parser = argparse.ArgumentParser(description="UltraSinger - Geração Automática de Arquivos UltraStar")
 
+    # Adicionar outros parâmetros já existentes
 
-def infos_from_audio_input_file() -> tuple[str, str, str, MediaInfo]:
-    """Infos from audio input file"""
-    basename = os.path.basename(settings.input_file_path)
-    basename_without_ext = os.path.splitext(basename)[0]
-
-    artist, title = None, None
-    if " - " in basename_without_ext:
-        artist, title = basename_without_ext.split(" - ", 1)
-        search_string = f"{artist} - {title}"
-    else:
-        search_string = basename_without_ext
-
-    # Get additional data for song
-    (title_info, artist_info, year_info, genre_info) = get_music_infos(search_string)
-
-    if title_info is not None:
-        title = title_info
-        artist = artist_info
-    else:
-        title = basename_without_ext
-        artist = "Unknown Artist"
-
-    if artist is not None and title is not None:
-        basename_without_ext = f"{artist} - {title}"
-        extension = os.path.splitext(basename)[1]
-        basename = f"{basename_without_ext}{extension}"
-
-    song_folder_output_path = os.path.join(settings.output_folder_path, basename_without_ext)
-    song_folder_output_path = get_unused_song_output_dir(song_folder_output_path)
-    os_helper.create_folder(song_folder_output_path)
-    os_helper.copy(settings.input_file_path, song_folder_output_path)
-    os_helper.rename(
-        os.path.join(song_folder_output_path, os.path.basename(settings.input_file_path)),
-        os.path.join(song_folder_output_path, basename),
-    )
-    # Todo: Read ID3 tags
-    ultrastar_audio_input_path = os.path.join(song_folder_output_path, basename)
-    real_bpm = get_bpm_from_file(settings.input_file_path)
-    return (
-        basename_without_ext,
-        song_folder_output_path,
-        ultrastar_audio_input_path,
-        MediaInfo(artist=artist, title=title, year=year_info, genre=genre_info, bpm=real_bpm),
+    # Novo parâmetro --changetone
+    parser.add_argument(
+        "--changetone",
+        type=int,
+        help="Muda a tonalidade dos áudios separados (exceto drums) em n semitons",
+        required=False,
     )
 
-
-def pitch_audio(
-        process_data_paths: ProcessDataPaths) -> PitchedData:
-    """Pitch audio"""
-
-    pitching_config = f"crepe_{settings.ignore_audio}_{settings.crepe_model_capacity}_{settings.crepe_step_size}_{settings.tensorflow_device}"
-    pitched_data_path = os.path.join(process_data_paths.cache_folder_path, f"{pitching_config}.json")
-    cache_available = check_file_exists(pitched_data_path)
-
-    if settings.skip_cache_transcription or not cache_available:
-        pitched_data = get_pitch_with_crepe_file(
-            process_data_paths.processing_audio_path,
-            settings.crepe_model_capacity,
-            settings.crepe_step_size,
-            settings.tensorflow_device,
-        )
-
-        pitched_data_json = pitched_data.to_json()
-        with open(pitched_data_path, "w", encoding=FILE_ENCODING) as file:
-            file.write(pitched_data_json)
-    else:
-        print(f"{ULTRASINGER_HEAD} {green_highlighted('cache')} reusing cached pitch data")
-        with open(pitched_data_path) as file:
-            json = file.read()
-            pitched_data = PitchedData.from_json(json)
-
-    return pitched_data
+    args = parser.parse_args()
+    return args
 
 
-def main(argv: list[str]) -> None:
-    """Main function"""
-    print_version(settings.APP_VERSION)
-    init_settings(argv)
-    run()
-    sys.exit()
-
-
-def remove_cache_folder(cache_folder_path: str) -> None:
-    """Remove cache folder"""
-    os_helper.remove_folder(cache_folder_path)
-
-
-def init_settings(argv: list[str]) -> Settings:
-    """Init settings"""
-    long, short = arg_options()
-    opts, args = getopt.getopt(argv, short, long)
-    if len(opts) == 0:
-        print_help()
-        sys.exit()
-    for opt, arg in opts:
-        if opt == "-h":
-            print_help()
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            settings.input_file_path = arg
-        elif opt in ("-o", "--ofile"):
-            settings.output_folder_path = arg
-        elif opt in ("--whisper"):
-            settings.transcriber = "whisper"
-            settings.whisper_model = arg
-        elif opt in ("--whisper_align_model"):
-            settings.whisper_align_model = arg
-        elif opt in ("--whisper_batch_size"):
-            settings.whisper_batch_size = int(arg)
-        elif opt in ("--whisper_compute_type"):
-            settings.whisper_compute_type = arg
-        elif opt in ("--language"):
-            settings.language = arg
-        elif opt in ("--crepe"):
-            settings.crepe_model_capacity = arg
-        elif opt in ("--crepe_step_size"):
-            settings.crepe_step_size = int(arg)
-        elif opt in ("--plot"):
-            settings.create_plot = arg in ["True", "true"]
-        elif opt in ("--midi"):
-            settings.create_midi = arg in ["True", "true"]
-        elif opt in ("--hyphenation"):
-            settings.hyphenation = eval(arg.title())
-        elif opt in ("--disable_separation"):
-            settings.use_separated_vocal = not arg
-        elif opt in ("--disable_karaoke"):
-            settings.create_karaoke = not arg
-        elif opt in ("--create_audio_chunks"):
-            settings.create_audio_chunks = arg
-        elif opt in ("--ignore_audio"):
-            settings.ignore_audio = arg in ["True", "true"]
-        elif opt in ("--force_cpu"):
-            settings.force_cpu = arg
-            if settings.force_cpu:
-                os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-        elif opt in ("--force_whisper_cpu"):
-            settings.force_whisper_cpu = eval(arg.title())
-        elif opt in ("--force_crepe_cpu"):
-            settings.force_crepe_cpu = eval(arg.title())
-        elif opt in ("--format_version"):
-            if arg == FormatVersion.V0_3_0.value:
-                settings.format_version = FormatVersion.V0_3_0
-            elif arg == FormatVersion.V1_0_0.value:
-                settings.format_version = FormatVersion.V1_0_0
-            elif arg == FormatVersion.V1_1_0.value:
-                settings.format_version = FormatVersion.V1_1_0
-            else:
-                print(
-                    f"{ULTRASINGER_HEAD} {red_highlighted('Error: Format version')} {blue_highlighted(arg)} {red_highlighted('is not supported.')}"
-                )
-                sys.exit(1)
-        elif opt in ("--keep_cache"):
-            settings.keep_cache = arg
-        elif opt in ("--musescore_path"):
-            settings.musescore_path = arg
-    if settings.output_folder_path == "":
-        if settings.input_file_path.startswith("https:"):
-            dirname = os.getcwd()
-        else:
-            dirname = os.path.dirname(settings.input_file_path)
-        settings.output_folder_path = os.path.join(dirname, "output")
-
-    if not settings.force_cpu:
-        settings.tensorflow_device, settings.pytorch_device = check_gpu_support()
-
-    return settings
-
-
-def arg_options():
-    short = "hi:o:amv:"
-    long = [
-        "ifile=",
-        "ofile=",
-        "crepe=",
-        "crepe_step_size=",
-        "whisper=",
-        "whisper_align_model=",
-        "whisper_batch_size=",
-        "whisper_compute_type=",
-        "language=",
-        "plot=",
-        "midi=",
-        "hyphenation=",
-        "disable_separation=",
-        "disable_karaoke=",
-        "create_audio_chunks=",
-        "ignore_audio=",
-        "force_cpu=",
-        "force_whisper_cpu=",
-        "force_crepe_cpu=",
-        "format_version=",
-        "keep_cache",
-        "musescore_path="
-    ]
-    return long, short
+def main():
+    """Função principal para rodar o UltraSinger"""
+    args = parse_args()
+    
+    # Aplicar as configurações com base nos argumentos recebidos
+    settings.changetone = args.changetone if args.changetone else None
+    
+    # Executar o processo principal
+    ultrastar_file_output, simple_score, accurate_score = run()
+    
+    print(f"Processamento completo. Arquivo UltraStar salvo em: {ultrastar_file_output}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
