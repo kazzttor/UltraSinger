@@ -6,59 +6,59 @@ from modules.console_colors import ULTRASINGER_HEAD, gold_highlighted, light_blu
 def print_help() -> None:
     """Print help text"""
     help_string = """
-    UltraSinger.py [opt] [mode] [transcription] [pitcher] [extra]
+    UltraSinger.py [opcoes] [modo] [transcrição] [pitcher] [extra]
     
-    [opt]
-    -h      This help text.
-    -i      Ultrastar.txt
-            audio like .mp3, .wav, youtube link
-    -o      Output folder
+    [opcoes]
+    -h      Este texto de ajuda.
+    -i      dado de entrada 
+            Ex: Ultrastar.txt áudio como .mp3, .wav, link do youtube
+    -o      Pasta de saída
     
-    [mode]
-    ## INPUT is audio ##
-    default  Creates all
+    [modo]
+    ## DADO DE ENTRADA é áudio ##
+    default  (padrão) - Cria tudo
     
-    # Single file creation selection is in progress, you currently getting all!
-    (-u      Create ultrastar txt file) # In Progress
-    (-m      Create midi file) # In Progress
-    (-s      Create sheet file) # In Progress
+    # Criação de arquivo único em desenvolvimento, somente possível criar tudo!
+    (-u      Criar arquivo txt para o UltraStar) # Em desenvolvimento 
+    (-m      Criar arquivo MIDI) # Em desenvolvimento
+    (-s      Criar Planilha) # Em desenvolvimento
     
-    ## INPUT is ultrastar.txt ##
-    default  Creates all
+    ## DADO DE ENTRADA é ultrastar.txt ##
+    default  (padrão) - Cria tudo
 
-    # Single selection is in progress, you currently getting all!
-    (-r      repitch Ultrastar.txt (input has to be audio)) # In Progress
-    (-p      Check pitch of Ultrastar.txt input) # In Progress
-    (-m      Create midi file) # In Progress
+    # Criação de arquivo único em desenvolvimento, somente possível criar tudo!
+    (-r      regerar Ultrastar.txt (entrada precisa ser arquivo de áudio)) # Em desenvolvimento 
+    (-p      Verificar o pitch de Ultrastar.txt fornecido) # Em desenvolvimento 
+    (-m      Criar arquivo MIDI) # Em desenvolvimento 
 
-    [transcription]
-    # Default is whisper
-    --whisper               Multilingual model > tiny|base|small|medium|large-v1|large-v2  >> ((default) is large-v2
-                            English-only model > tiny.en|base.en|small.en|medium.en
-    --whisper_align_model   Use other languages model for Whisper provided from huggingface.co
-    --language              Override the language detected by whisper, does not affect transcription but steps after transcription
-    --whisper_batch_size    Reduce if low on GPU mem >> ((default) is 16)
-    --whisper_compute_type  Change to "int8" if low on GPU mem (may reduce accuracy) >> ((default) is "float16" for cuda devices, "int8" for cpu)
+    [transcrição]
+    # Transcritor padrão é o whisper
+    --whisper               Modelo multi-idioma > tiny|base|small|medium|large-v1|large-v2  >> ((padrão) é large-v2)
+                            Modelo somente em inglês > tiny.en|base.en|small.en|medium.en
+    --whisper_align_model   Usar outro modelo de idioma Whisper fornecido por huggingface.co
+    --language              Forçaro o idioma detectado pelo whisper, não afeta a transcrição, mas os passos depois
+    --whisper_batch_size    Reduza se pouca memória da GPU >> ((padrão) é 16)
+    --whisper_compute_type  Mude para "int8" se pouca memória da GPU (pode reduzir accurácia) >> ((padrão) é "float16" para dispositivos cuda, "int8" para cpu)
     
     [pitcher]
-    # Default is crepe
-    --crepe            tiny|full >> ((default) is full)
-    --crepe_step_size  unit is miliseconds >> ((default) is 10)
+    # Picher padrão é Crepe
+    --crepe            tiny|full >> ((padrão) é full)
+    --crepe_step_size  unit is miliseconds >> ((padrão) é 10)
     
     [extra]
-    --hyphenation           True|False >> ((default) is True)
-    --disable_separation    True|False >> ((default) is False)
-    --disable_karaoke       True|False >> ((default) is False)
-    --create_audio_chunks   True|False >> ((default) is False)
-    --keep_cache            True|False >> ((default) is False)
-    --plot                  True|False >> ((default) is False)
-    --format_version        0.3.0|1.0.0|1.1.0 >> ((default) is 1.0.0)
-    --musescore_path        path to MuseScore executable
+    --hyphenation           (hifenização) True|False >> ((padrão) é True)
+    --disable_separation    (desabilitar separação) True|False >> ((padrão) é False)
+    --disable_karaoke       (desabilitar versão karaoke) True|False >> ((padrão) é False)
+    --create_audio_chunks   (criar partes de áudio) True|False >> ((padrão) é False)
+    --keep_cache            (manter cache) True|False >> ((padrão) é False)
+    --plot                  (plotar) True|False >> ((padrão) é False)
+    --format_version        (versão do formato UltraStar) 0.3.0|1.0.0|1.1.0 >> ((padrão) é 1.0.0)
+    --musescore_path        local do executável MuseScore
     
-    [device]
-    --force_cpu             True|False >> ((default) is False)  All steps will be forced to cpu
-    --force_whisper_cpu     True|False >> ((default) is False)  Only whisper will be forced to cpu
-    --force_crepe_cpu       True|False >> ((default) is False)  Only crepe will be forced to cpu
+    [dispositivo]
+    --force_cpu             True|False >> ((padrão) é False)  Forçar todo o processamento por cpu
+    --force_whisper_cpu     True|False >> ((padrão) é False)  Forçar somente processamento do Whisper por cpu
+    --force_crepe_cpu       True|False >> ((padrão) é False)  Forçar somente processamento do crepe por cpu
     """
     print(help_string)
 
@@ -67,13 +67,13 @@ def print_support() -> None:
     """Print support text"""
     print()
     print(
-        f"{ULTRASINGER_HEAD} {gold_highlighted('Do you like UltraSinger? Want it to be even better? Then help with your')} {light_blue_highlighted('support')}{gold_highlighted('!')}"
+        f"{ULTRASINGER_HEAD} {gold_highlighted('Gosta do UltraSinger? Quer melhorar? então ajuste com seu')} {light_blue_highlighted('apoio')}{gold_highlighted('!')}"
     )
     print(
-        f"{ULTRASINGER_HEAD} See project page -> https://github.com/rakuri255/UltraSinger"
+        f"{ULTRASINGER_HEAD} Acesse a página do projeto -> https://github.com/kazzttor/UltraSinger"
     )
     print(
-        f"{ULTRASINGER_HEAD} {gold_highlighted('This will help a lot to keep this project alive and improved.')}"
+        f"{ULTRASINGER_HEAD} {gold_highlighted('Isto ajudará a manter e melhorar o projeto.')}"
     )
 
 
@@ -81,5 +81,5 @@ def print_version(app_version: str) -> None:
     """Print version text"""
     print()
     print(f"{ULTRASINGER_HEAD} {gold_highlighted('*****************************')}")
-    print(f"{ULTRASINGER_HEAD} {gold_highlighted('UltraSinger Version:')} {light_blue_highlighted(app_version)}")
+    print(f"{ULTRASINGER_HEAD} {gold_highlighted('UltraSinger Versão:')} {light_blue_highlighted(app_version)}")
     print(f"{ULTRASINGER_HEAD} {gold_highlighted('*****************************')}")
