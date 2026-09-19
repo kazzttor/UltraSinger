@@ -133,15 +133,15 @@ _Nem todas as funções estão funcionando!_
     --plot                  (plotar) True|False >> ((padrão) é False)
     --format_version        (versão do formato UltraStar) 0.3.0|1.0.0|1.1.0 >> ((padrão) é 1.0.0)
     --musescore_path        local do executável MuseScore
+    --changetone N          Gera uma versão adicional transposta em N semitons.
+                            A bateria permanece original; baixo e outros instrumentos são transpostos.
+    --create-lyrics-video   Gera um vídeo MP4 com legendas ASS sincronizadas pelas notas UltraStar.
+    --video-background      Imagem ou vídeo opcional para o fundo do lyrics video.
     
     [dispositivo]
     --force_cpu             True|False >> ((padrão) é False)  Forçar todo o processamento por cpu
     --force_whisper_cpu     True|False >> ((padrão) é False)  Forçar somente processamento do Whisper por cpu
     --force_crepe_cpu       True|False >> ((padrão) é False)  Forçar somente processamento do crepe por cpu
-    --changetone N          Gera uma versão adicional transposta em N semitons.
-                            A bateria permanece original; baixo e outros instrumentos são transpostos.
-    --create-lyrics-video   Gera um vídeo MP4 com legendas ASS sincronizadas pelas notas UltraStar.
-    --video-background      Imagem ou vídeo opcional para o fundo do lyrics video.
 
 ```
 
