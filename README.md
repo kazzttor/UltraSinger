@@ -12,7 +12,7 @@
 <img src="https://repository-images.githubusercontent.com/594208922/4befe3da-a448-4cbc-b6ef-93899119071b" style="height: 300px;width: auto;" alt="UltraSinger Logo">
 </p>
 
-# UltraSinger
+# UltraSinger (DarkKaraoke edition)
 
 > ⚠️ _Este projeto parmanece em desenvolvimento!_
 
