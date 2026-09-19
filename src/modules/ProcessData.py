@@ -28,12 +28,11 @@ class MediaInfo:
 @dataclass
 class ProcessData:
     """Data for processing"""
-    process_data_paths: ProcessDataPaths = ProcessDataPaths()
+    process_data_paths: ProcessDataPaths = field(default_factory=ProcessDataPaths)
     basename: Optional[str] = None
     media_info: Optional[MediaInfo] = None
     transcribed_data: Optional[List[TranscribedData]] = field(default_factory=list)
     pitched_data: Optional[PitchedData] = None
     midi_segments: Optional[List[MidiSegment]] = field(default_factory=list)
     parsed_file: Optional[UltrastarTxtValue] = None
-
 

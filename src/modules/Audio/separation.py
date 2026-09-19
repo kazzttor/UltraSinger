@@ -12,6 +12,7 @@ from modules.console_colors import (
     red_highlighted, green_highlighted,
 )
 from modules.os_helper import check_file_exists
+from modules.Audio.remix import create_transposed_instrumental
 
 class DemucsModel(Enum):
     HTDEMUCS = "htdemucs"           # first version of Hybrid Transformer Demucs. Trained on MusDB + 800 songs. Default model.
@@ -24,16 +25,20 @@ class DemucsModel(Enum):
     MDX_EXTRA_Q = "mdx_extra_q"     # quantized version of mdx_extra. Smaller download and storage but quality can be slightly worse.
     SIG = "SIG"                     # Placeholder for a single model from the model zoo.
 
-def separate_audio(input_file_path: str, output_folder: str, model: DemucsModel, device="cpu") -> None:
+def separate_audio(
+        input_file_path: str,
+        output_folder: str,
+        model: DemucsModel,
+        device="cpu",
+        four_stems: bool = False,
+) -> None:
     """Separate vocals from audio with demucs."""
 
     print(
         f"{ULTRASINGER_HEAD} Separating vocals from audio with {blue_highlighted('demucs')} with model {blue_highlighted(model.value)} and {red_highlighted(device)} as worker."
     )
 
-    demucs.separate.main(
-        [
-            "--two-stems", "vocals",
+    arguments = [
             "-d", f"{device}",
             "--float32",
             "-n",
@@ -41,7 +46,9 @@ def separate_audio(input_file_path: str, output_folder: str, model: DemucsModel,
             "--out", f"{os.path.join(output_folder, 'separated')}",
             f"{input_file_path}",
         ]
-    )
+    if not four_stems:
+        arguments[0:0] = ["--two-stems", "vocals"]
+    demucs.separate.main(arguments)
 
 def separate_vocal_from_audio(cache_folder_path: str,
                               audio_output_file_path: str,
@@ -49,17 +56,34 @@ def separate_vocal_from_audio(cache_folder_path: str,
                               create_karaoke: bool,
                               pytorch_device: str,
                               model: DemucsModel,
-                              skip_cache: bool = False) -> str:
+                              skip_cache: bool = False,
+                              transpose_semitones: int = 0) -> str:
     """Separate vocal from audio"""
     demucs_output_folder = os.path.splitext(os.path.basename(audio_output_file_path))[0]
     audio_separation_path = os.path.join(cache_folder_path, "separated", model.value, demucs_output_folder)
 
+    four_stems = transpose_semitones != 0
     vocals_path = os.path.join(audio_separation_path, "vocals.wav")
     instrumental_path = os.path.join(audio_separation_path, "no_vocals.wav")
+    if four_stems:
+        instrumental_path = os.path.join(
+            cache_folder_path, "remixes", f"{demucs_output_folder}_{transpose_semitones}.wav"
+        )
     if use_separated_vocal or create_karaoke:
         cache_available = check_file_exists(vocals_path) and check_file_exists(instrumental_path)
         if skip_cache or not cache_available:
-            separate_audio(audio_output_file_path, cache_folder_path, model, pytorch_device)
+            separate_audio(
+                audio_output_file_path, cache_folder_path, model, pytorch_device, four_stems
+            )
+            if four_stems:
+                stems_dir = os.path.join(audio_separation_path)
+                os.makedirs(os.path.dirname(instrumental_path), exist_ok=True)
+                create_transposed_instrumental(
+                    stems_dir,
+                    os.path.join(cache_folder_path, "remixes", f"{demucs_output_folder}_original.wav"),
+                    0,
+                )
+                create_transposed_instrumental(stems_dir, instrumental_path, transpose_semitones)
         else:
             print(f"{ULTRASINGER_HEAD} {green_highlighted('cache')} reusing cached separated vocals")
 
