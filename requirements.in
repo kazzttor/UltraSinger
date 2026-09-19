@@ -16,6 +16,7 @@ pydub
 PyHyphen-Reloaded
 python_Levenshtein
 scipy
+soundfile
 tensorflow==2.10
 tqdm
 #whisperx
