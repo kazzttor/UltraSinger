@@ -27,44 +27,43 @@ Vários modelos de IA são usados para extrair texto da voz e determinar o tom.
 
 Por favor, mencione o UltraSinger em seu arquivo UltraStar.txt se você usá-lo. Isso ajuda outras pessoas a encontrar essa ferramenta e ajuda essa ferramenta a ser aprimorada e mantida. Você só deve usá-lo em músicas licenciadas pela Creative Commons.
 
-## ❤️ Suporte
-Existem muitas maneiras de apoiar este projeto. Atribuir estrelas ⭐️ o repositório é apenas um 🙏
+## ❤️ Créditos e projeto original
+Este fork parte do trabalho original do UltraSinger, criado por
+[Rakuri](https://github.com/rakuri255). A ideia, a arquitetura inicial e a maior
+parte do processamento de áudio pertencem ao projeto original.
 
-Você também pode apoiar este trabalho em <a href="https://github.com/sponsors/rakuri255">Apoiadores do Github</a> ou <a href="https://patreon.com/Rakuri">Patreon</a> ou <a href="https://www.buymeacoffee.com/rakuri255" target="_blank">Buy Me a Coffee</a>.
-
-Isso vai me ajudar muito a manter este projeto vivo e melhorá-lo.
-
-<a href="https://www.buymeacoffee.com/rakuri255" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-<a href="https://patreon.com/Rakuri"><img src="https://raw.githubusercontent.com/rakuri255/UltraSinger/main/assets/patreon.png" alt="Become a Patron" style="height: 60px !important;width: 217px !important;"/> </a>
-<a href="https://github.com/sponsors/rakuri255"><img src="https://raw.githubusercontent.com/rakuri255/UltraSinger/main/assets/mona-heart-featured.webp" alt="GitHub Sponsor" style="height: 60px !important;width: auto;"/> </a>
+Para conhecer, apoiar ou contribuir com o projeto inicial, acesse o
+[repositório original do UltraSinger](https://github.com/rakuri255/UltraSinger).
 
 ## Índice
 
 - [UltraSinger](#ultrasinger)
-  - [❤️ Suporte](#️-support)
-  - [Índice](#table-of-contents)
-  - [💻 Como usar o código-fonte](#-how-to-use-this-source-code)
-    - [Instalação](#installation)
-    - [Executando](#run)
-  - [📖 Como usar](#-how-to-use-the-app)
-    - [🎶 Entrada](#-input)
-      - [Áudio (totalmente automático)](#audio-full-automatic)
-        - [Arquivo Local](#local-file)
-        - [Youtube](#youtube)
-      - [UltraStar (regerar)](#ultrastar-re-pitch)
-    - [🗣 Transcritor](#-transcriber)
+  - [❤️ Créditos e projeto original](#️-créditos-e-projeto-original)
+  - [Índice](#índice)
+  - [💻 Como usar o código-fonte](#-como-usar-o-código-fonte)
+    - [Instalação](#instalação)
+    - [Execução](#execução)
+  - [📖 Como usar o aplicativo](#-como-usar-o-aplicativo)
+    - [🎶 Entrada](#-entrada)
+      - [Áudio (modo automático)](#áudio-modo-automático)
+        - [Arquivo local](#arquivo-local)
+        - [YouTube](#youtube)
+      - [UltraStar (regerar)](#ultrastar-regerar)
+    - [🗣 Transcrição](#-transcrição)
       - [Whisper](#whisper)
-        - [Idiomas do Whisper](#whisper-languages)
-      - [✍️ Hifenização](#️-hyphenation)
-    - [👂 Pitcher](#-pitcher)
-    - [👄 Separação](#-separation)
-    - [Planilha da música](#sheet-music)
-    - [Versão de formato](#format-version)
-    - [🏆 Cálculo de pontuação do UltraStar](#-ultrastar-score-calculation)
-    - [📟 Uso da GPU](#-use-gpu)
-      - [Consideraçoes para usuários do Windows](#considerations-for-windows-users)
-      - [Informações](#info)
-      - [Uso com Docker](#docker)
+        - [Idiomas do Whisper](#idiomas-do-whisper)
+      - [✍️ Hifenização](#️-hifenização)
+    - [👂 Detecção de notas](#-detecção-de-notas)
+    - [👄 Separação de áudio](#-separação-de-áudio)
+    - [🎼 Partitura](#-partitura)
+    - [🎵 Transposição](#-transposição)
+    - [🎬 Lyrics video](#-lyrics-video)
+    - [Versão do formato](#versão-do-formato)
+    - [🏆 Cálculo de pontuação do UltraStar](#-cálculo-de-pontuação-do-ultrastar)
+    - [📟 Uso da GPU](#-uso-da-gpu)
+      - [Considerações para usuários do Windows](#considerações-para-usuários-do-windows)
+      - [Informações](#informações)
+      - [Uso com Docker](#uso-com-docker)
 
 ## 💻 Como usar o código-fonte
 
@@ -76,53 +75,52 @@ Isso vai me ajudar muito a manter este projeto vivo e melhorá-lo.
   * Escolha `GPU` se possui uma GPU nvidia CUDA.
   * Escolha `CPU` se não possui uma GPU nvidia CUDA.
 
-### Executando
+### Execução
 
 * Na pasta raiz execute `run_on_windows.bat` ou `run_on_linux.sh` para iniciar o aplicativo.
-* Agora voce pode usar o arquivo fonte do UltraSinger com `py UltraSinger.py [opcoes] [modo] [transcrição] [pitcher] [extra]`. veja [Como usar](#how-to-use) para maiores informações.
+* Agora você pode usar o arquivo-fonte do UltraSinger com `py UltraSinger.py [opções] [modo] [transcrição] [detecção de notas] [extra]`. Consulte [Como usar o aplicativo](#-como-usar-o-aplicativo) para mais informações.
 
 ## 📖 Como usar o aplicativo
 
-_Nem todas as funções estão funcionando!_
+_Algumas funções ainda estão em desenvolvimento._
 ```commandline
  UltraSinger.py [opcoes] [modo] [transcrição] [pitcher] [extra]
     
     [opcoes]
-    -h      Este texto de ajuda.
-    -i      dado de entrada 
-            Ex: Ultrastar.txt áudio como .mp3, .wav, link do youtube
-    -o      Pasta de saída
+    -h      Exibe este texto de ajuda.
+    -i      Dado de entrada.
+            Ex.: arquivo UltraStar.txt, áudio .mp3/.wav ou link do YouTube.
+    -o      Pasta de saída.
     
     [modo]
-    ## DADO DE ENTRADA é áudio ##
-    default  (padrão) - Cria tudo
+    ## O DADO DE ENTRADA É ÁUDIO ##
+    padrão   Cria todos os arquivos.
     
-    # Criação de arquivo único em desenvolvimento, somente possível criar tudo!
-    (-u      Criar arquivo txt para o UltraStar) # Em desenvolvimento 
-    (-m      Criar arquivo MIDI) # Em desenvolvimento
-    (-s      Criar Planilha) # Em desenvolvimento
+    # Criação de arquivo único em desenvolvimento; atualmente o fluxo completo é executado.
+    (-u      Criar arquivo TXT para o UltraStar)
+    (-m      Criar arquivo MIDI)
+    (-s      Criar partitura)
     
-    ## DADO DE ENTRADA é ultrastar.txt ##
-    default  (padrão) - Cria tudo
+    ## O DADO DE ENTRADA É ULTRASTAR.TXT ##
+    padrão   Reprocessa o arquivo e o áudio associado.
 
-    # Criação de arquivo único em desenvolvimento, somente possível criar tudo!
-    (-r      regerar Ultrastar.txt (entrada precisa ser arquivo de áudio)) # Em desenvolvimento 
-    (-p      Verificar o pitch de Ultrastar.txt fornecido) # Em desenvolvimento 
-    (-m      Criar arquivo MIDI) # Em desenvolvimento 
+    (-r      Regerar UltraStar.txt (a entrada precisa ser um arquivo de áudio))
+    (-p      Verificar as notas do UltraStar.txt fornecido)
+    (-m      Criar arquivo MIDI)
 
     [transcrição]
-    # Transcritor padrão é o whisper
-    --whisper               Modelo multi-idioma > tiny|base|small|medium|large-v1|large-v2  >> ((padrão) é large-v2)
-                            Modelo somente em inglês > tiny.en|base.en|small.en|medium.en
-    --whisper_align_model   Usar outro modelo de idioma Whisper fornecido por huggingface.co
-    --language              Forçaro o idioma detectado pelo whisper, não afeta a transcrição, mas os passos depois
-    --whisper_batch_size    Reduza se pouca memória da GPU >> ((padrão) é 16)
-    --whisper_compute_type  Mude para "int8" se pouca memória da GPU (pode reduzir accurácia) >> ((padrão) é "float16" para dispositivos cuda, "int8" para cpu)
+    # O transcritor padrão é o Whisper.
+    --whisper               Modelo multilíngue: tiny|base|small|medium|large-v1|large-v2
+                            Modelo somente em inglês: tiny.en|base.en|small.en|medium.en
+    --whisper_align_model   Usar outro modelo de idioma do Hugging Face.
+    --language              Forçar o idioma usado nas etapas posteriores.
+    --whisper_batch_size    Reduzir se houver pouca memória de GPU (padrão: 16).
+    --whisper_compute_type  Usar "int8" em máquinas com pouca memória (padrão: float16 em CUDA, int8 em CPU).
     
     [pitcher]
-    # Picher padrão é Crepe
-    --crepe            tiny|full >> ((padrão) é full)
-    --crepe_step_size  unit is miliseconds >> ((padrão) é 10)
+    # O detector de notas padrão é o CREPE.
+    --crepe            tiny|full (padrão: full)
+    --crepe_step_size  Intervalo em milissegundos (padrão: 10)
     
     [extra]
     --hyphenation           (hifenização) True|False >> ((padrão) é True)
@@ -178,7 +176,7 @@ python src/UltraSinger.py -i "input/music.mp3" --changetone -2 --create-lyrics-v
 
 ### 🎶 Entrada
 
-#### Áudio (totalmente automático)
+#### Áudio (modo automático)
 
 ##### Arquivo local
 
@@ -186,189 +184,208 @@ python src/UltraSinger.py -i "input/music.mp3" --changetone -2 --create-lyrics-v
 -i "input/music.mp3"
 ```
 
-##### Youtube
+##### YouTube
 
 ```commandline
 -i https://www.youtube.com/watch?v=BaW_jenozKc
 ```
 
-#### UltraStar (re-pitch)
+#### UltraStar (regerar)
 
-This re-pitch the audio and creates a new txt file.
+Esse modo reprocessa o áudio e cria um novo arquivo TXT.
 
 ```commandline
 -i "input/ultrastar.txt"
 ```
 
-### 🗣 Transcriber
+### 🗣 Transcrição
 
-Keep in mind that while a larger model is more accurate, it also takes longer to transcribe.
+Modelos maiores costumam ser mais precisos, mas também levam mais tempo para transcrever.
 
 #### Whisper
 
-For the first test run, use the `tiny`, to be accurate use the `large-v2` model.
+Para um primeiro teste, use `tiny`. Para maior precisão, use `large-v2`.
 
 ```commandline
 -i XYZ --whisper large-v2
 ```
 
-##### Whisper languages
+##### Idiomas do Whisper
 
-Currently provided default language models are `en, fr, de, es, it, ja, zh, nl, uk, pt`. 
-If the language is not in this list, you need to find a phoneme-based ASR model from 
-[🤗 huggingface model hub](https://huggingface.co). It will download automatically.
+Os idiomas padrão disponíveis são `en, fr, de, es, it, ja, zh, nl, uk, pt`.
+Para outros idiomas, é necessário encontrar um modelo de reconhecimento baseado em
+fonemas no [🤗 Hugging Face Model Hub](https://huggingface.co). O modelo será baixado automaticamente.
 
-Example for romanian:
+Exemplo para romeno:
 ```commandline
 -i XYZ --whisper_align_model "gigant/romanian-wav2vec2"
 ```
 
-#### ✍️ Hyphenation
+#### ✍️ Hifenização
 
-Is on by default. Can also be deactivated if hyphenation does not produce 
-anything useful. Note that the word is simply split, 
-without paying attention to whether the separated word really 
-starts at the place or is heard.  
+É ativada por padrão. Pode ser desativada se não produzir um resultado útil.
+As palavras são apenas divididas, sem verificar se cada sílaba começa exatamente
+no ponto em que é cantada.
 
 ```commandline
 -i XYZ --hyphenation True
 ```
 
-### 👂 Pitcher
+### 👂 Detecção de notas
 
-Pitching is done with the `crepe` model.
-Also consider that a bigger model is more accurate, but also takes longer to pitch.
-For just testing you should use `tiny`.
-If you want solid accurate, then use the `full` model.
+A detecção de altura é feita pelo modelo `crepe`.
+Modelos maiores são mais precisos, mas demoram mais. Para testes, use `tiny`;
+para maior precisão, use `full`.
 
 ```commandline
 -i XYZ --crepe full
 ```
 
-### 👄 Separation
+### 👄 Separação de áudio
 
-The vocals are separated from the audio before they are passed to the models. If problems occur with this, 
-you have the option to disable this function; in which case the original audio file is used instead.
+Os vocais são separados antes de serem enviados aos modelos. Se ocorrerem problemas,
+é possível desativar essa etapa; nesse caso, o áudio original será usado.
 
 ```commandline
 -i XYZ --disable_separation True
 ```
 
-### Sheet Music
+### 🎼 Partitura
 
-For Sheet Music generation you need to have `MuseScore` installed on your system.
-Or provide the path to the `MuseScore` executable.
+Para gerar partituras, instale o `MuseScore` ou informe o caminho do executável.
 
 ```commandline
 -i XYZ --musescore_path "C:/Program Files/MuseScore 4/bin/MuseScore4.exe"
 ```
 
-### Format Version
+### 🎵 Transposição
 
-This defines the format version of the UltraStar.txt file. For more info see [Official UltraStar format specification](https://usdx.eu/format/).
+Use `--changetone N` para gerar, além do playback original, uma segunda versão
+transposta por `N` semitons. Valores positivos sobem o tom e valores negativos
+abaixam o tom. A bateria permanece original; o baixo e os demais instrumentos
+harmônicos recebem a transposição. As notas do arquivo UltraStar também são ajustadas.
 
-You can choose between 3 different format versions. The default is `1.0.0`.
-* `0.3.0` is the old format version. Use this if you have problems with the new format.
-* `1.0.0` is the current format version.
-* `1.1.0` is the upcoming format version. It is not finished yet.
+```commandline
+-i XYZ --changetone 2
+-i XYZ --changetone -2
+```
+
+### 🎬 Lyrics video
+
+Use `--create-lyrics-video` para gerar um vídeo MP4 com a letra sincronizada
+diretamente a partir das notas do UltraStar. O FFmpeg precisa estar instalado e
+disponível no `PATH`. Use `--video-background` para informar uma imagem ou vídeo
+de fundo. Se a transposição também for ativada, o vídeo original e o transposto
+serão gerados.
+
+```commandline
+-i XYZ --create-lyrics-video
+-i XYZ --create-lyrics-video --video-background "input/background.jpg"
+-i XYZ --changetone 2 --create-lyrics-video
+```
+
+### Versão do formato
+
+Esta opção define a versão do formato do arquivo UltraStar.txt. Consulte a
+[especificação oficial do formato UltraStar](https://usdx.eu/format/) para mais informações.
+
+É possível escolher entre três versões. A padrão é `1.0.0`.
+* `0.3.0` é a versão antiga; use-a se houver problemas com o formato novo.
+* `1.0.0` é a versão atual.
+* `1.1.0` é uma versão futura e ainda não está finalizada.
 
 ```commandline
 -i XYZ --format_version 1.0.0
 ```
 
-### 🏆 Ultrastar Score Calculation
+### 🏆 Cálculo de pontuação do UltraStar
 
-The score that the singer in the audio would receive will be measured. 
-You get 2 scores, simple and accurate. You wonder where the difference is? 
-Ultrastar is not interested in pitch hights. As long as it is in the pitch range A-G you get one point. 
-This makes sense for the game, because otherwise men don't get points for high female voices and women don't get points 
-for low male voices. Accurate is the real tone specified in the txt. I had txt files where the pitch was in a range not 
-singable by humans, but you could still reach the 10k points in the game. The accuracy is important here, because from
-this MIDI and sheet are created. And you also want to have accurate files
+É possível medir a pontuação que o cantor da gravação receberia. São exibidas
+duas pontuações: simples e precisa. O UltraStar não considera a altura exata
+da nota; enquanto ela estiver na faixa correspondente às notas A-G, o jogador
+recebe o ponto. Isso permite que vozes masculinas e femininas cantem a mesma
+música. A pontuação precisa usa a altura real especificada no TXT e é importante
+para gerar MIDI e partituras mais fiéis.
 
+### 📟 Uso da GPU
 
-### 📟 Use GPU
+Uma GPU pode acelerar o processamento e melhorar a qualidade da transcrição e da
+detecção de notas.
 
-With a GPU you can speed up the process. Also the quality of the transcription and pitching is better.
+É necessário um dispositivo CUDA. Atualmente não há suporte CUDA nativo para macOS.
 
-You need a cuda device for this to work. Sorry, there is no cuda device for macOS.
+É recomendável instalar o [driver CUDA](https://developer.nvidia.com/cuda-downloads)
+da sua GPU. Instale também o PyTorch com CUDA no ambiente virtual; consulte as
+[instruções do PyTorch](https://pytorch.org/get-started/locally/) e verifique a
+[compatibilidade da sua GPU](https://gist.github.com/standaloneSA/99788f30466516dbcc00338b36ad5acf).
 
-It is optional (but recommended) to install the cuda driver for your gpu: see [driver](https://developer.nvidia.com/cuda-downloads).
-Install torch with cuda separately in your `venv`. See [tourch+cuda](https://pytorch.org/get-started/locally/).
-Also check you GPU cuda support. See [cuda support](https://gist.github.com/standaloneSA/99788f30466516dbcc00338b36ad5acf)
-
-Command for `pip`:
+Comando para `pip`:
 ```
 pip3 install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2+cu117 --index-url https://download.pytorch.org/whl/cu117
 ```
 
-When you want to use `conda` instead you need a [different installation command](https://pytorch.org/get-started/locally/).
+Se preferir usar `conda`, consulte o [comando de instalação correspondente](https://pytorch.org/get-started/locally/).
 
-#### Considerations for Windows users
+#### Considerações para usuários do Windows
 
-The pitch tracker used by UltraSinger (crepe) uses TensorFlow as its backend.
-TensorFlow dropped GPU support for Windows for versions >2.10 as you can see in this [release note](https://github.com/tensorflow/tensorflow/releases/tag/v2.11.1) and their [installation instructions](https://www.tensorflow.org/install/pip#windows-native).
+O detector de notas usado pelo UltraSinger (`crepe`) usa o TensorFlow.
+O TensorFlow deixou de oferecer suporte à GPU no Windows em versões posteriores
+à 2.10, conforme as [notas de versão](https://github.com/tensorflow/tensorflow/releases/tag/v2.11.1)
+e as [instruções de instalação](https://www.tensorflow.org/install/pip#windows-native).
 
-For now UltraSinger runs the latest version available that still supports GPUs on windows.
+Por isso, o UltraSinger usa a versão mais recente que ainda oferece suporte à GPU no Windows.
 
-For running later versions of TensorFlow on windows while still taking advantage of GPU support the suggested solution is:
+Para usar versões posteriores do TensorFlow no Windows mantendo o suporte à GPU, a solução
+recomendada é:
 
-* [install WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
-* within the Ubuntu WSL2 installation
-  * run `sudo apt update && sudo apt install nvidia-cuda-toolkit`
-  * follow the setup instructions for UltraSinger at the top of this document
+* [Instale o WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+* Na instalação Ubuntu do WSL2:
+  * execute `sudo apt update && sudo apt install nvidia-cuda-toolkit`;
+  * siga as instruções de configuração do UltraSinger no início deste documento.
 
-#### Info
+#### Informações
 
-If something crashes because of low VRAM then use a smaller model.
-Whisper needs more than 8GB VRAM in the `large` model!
+Se ocorrerem falhas por falta de VRAM, use um modelo menor.
+O modelo `large` do Whisper precisa de mais de 8 GB de VRAM.
 
-You can also force cpu usage with the extra option `--force_cpu`.
+Também é possível forçar o uso da CPU com a opção `--force_cpu`.
 
 #### Docker
-to run the docker run `git clone https://github.com/rakuri255/UltraSinger.git`
-enter the UltraSinger folder.
-run this command to build the docker
-`docker build -t ultrasinger .` make sure to include the "." at the end
-let this run till complete.
-then run this command
-`docker run --gpus all -it --name UltraSinger -v  $pwd/src/output:/app/src/output ultrasinger`
 
-Docker-Compose
-there are two files that you can pick from.
-cd into `docker-compose` folder and then cd into `Nvidia` or `NonGPU`
-Run `docker-compose up` to download and setup
+Para usar o Docker, clone o repositório e entre na pasta do UltraSinger:
 
-Nvidia is for if you have a nvidia gpu to use with UltraSinger.
-NonGPU is for if you wish to only use the CPU for UltraSinger.
+```commandline
+git clone https://github.com/kazzttor/UltraSinger.git
+cd UltraSinger
+docker build -t ultrasinger .
+docker run --gpus all -it --name UltraSinger -v $pwd/src/output:/app/src/output ultrasinger
+```
 
-Output
-by default the docker-compose will setup the output folder as `/output` inside the docker.
-on the host machine it will map to the folder with the `docker-compose.yml` file under `output`
-you may chnage this by editing the `docker-compose.yml`
+Também há configurações do Docker Compose para GPU (`Nvidia`) e CPU
+(`NonGPU`). Entre na pasta correspondente e execute:
 
-to edit the file.
-use any text editor you wish. i would recoment nano.
-run `nano docker-compose.yml`
-then change this line
-`            -  ./output:/app/UltraSinger/src/output`
-to anything you line for on your host machine.
-`            -  /yourfolderpathhere:/app/UltraSinger/src/output`
-sample
-`            -  /mnt/user/appdata/UltraSinger:/output`
-note the blank space before the `-`
-formating is important here in this file.
+```commandline
+docker-compose up
+```
 
-this will create and drop you into the docker.
-now run this command.
-`python3 UltraSinger.py -i file`
-or
-`python3 UltraSinger.py -i youtube_url`
-to use mp3's in the folder you git cloned you must place all songs you like in UltraSinger/src/output.
-this will be the place for youtube links aswell.
+Por padrão, a pasta `output` do Compose é compartilhada com a pasta `output`
+do host. Para alterar esse caminho, edite o arquivo `docker-compose.yml`.
+Por exemplo:
 
+```yaml
+- /caminho/da/sua/pasta:/app/UltraSinger/src/output
+```
 
-to quit the docker just type exit.
+Depois de iniciar o contêiner, execute:
 
-to reenter docker run this command
-`docker start UltraSinger && Docker exec -it UltraSinger /bin/bash`
+```commandline
+python3 UltraSinger.py -i arquivo.mp3
+python3 UltraSinger.py -i youtube_url
+```
+
+Para sair do contêiner, execute `exit`. Para entrar novamente:
+
+```commandline
+docker start UltraSinger
+docker exec -it UltraSinger /bin/bash
+```
