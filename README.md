@@ -137,10 +137,20 @@ _Nem todas as funções estão funcionando!_
     --force_cpu             True|False >> ((padrão) é False)  Forçar todo o processamento por cpu
     --force_whisper_cpu     True|False >> ((padrão) é False)  Forçar somente processamento do Whisper por cpu
     --force_crepe_cpu       True|False >> ((padrão) é False)  Forçar somente processamento do crepe por cpu
+    --changetone N          Gera uma versão adicional transposta em N semitons.
+                            A bateria permanece original; baixo e outros instrumentos são transpostos.
+    --create-lyrics-video   Gera um vídeo MP4 com legendas ASS sincronizadas pelas notas UltraStar.
+    --video-background      Imagem ou vídeo opcional para o fundo do lyrics video.
 
 ```
 
 Para o uso normal, basta usar os argumentos de [opcoes]. Os demais parâmetros são opcionais.
+
+Quando `--changetone` é usado, o UltraSinger mantém a versão original e cria uma segunda
+mixagem, arquivo UltraStar e áudio com o sufixo `[+N semitones]` (ou `[-N semitones]`).
+O Demucs usa quatro fontes nesse modo (`vocals`, `drums`, `bass`, `other`): apenas `bass`
+e `other` recebem pitch shift. `--create-lyrics-video` pode ser combinado com a transposição
+para gerar os dois vídeos, usando FFmpeg instalado no PATH.
 
 ### 🎶 Entrada
 
@@ -338,4 +348,3 @@ to quit the docker just type exit.
 
 to reenter docker run this command
 `docker start UltraSinger && Docker exec -it UltraSinger /bin/bash`
-

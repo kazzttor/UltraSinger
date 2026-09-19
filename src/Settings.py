@@ -62,3 +62,6 @@ class Settings:
     skip_cache_transcription = False
     skip_cache_pitch_detection = False
     calculate_score = True
+    changetone = None
+    create_lyrics_video = False
+    video_background = None

@@ -10,6 +10,9 @@ FILE_ENCODING = "utf-8"
 class UltrastarTxtTag(str, Enum):
     """Tags for Ultrastar TXT files."""
 
+    def __str__(self) -> str:
+        return self.value
+
     # 0.2.0
     VERSION = 'VERSION'  # Version of the file format: See https://usdx.eu/format/
     ARTIST = 'ARTIST'
@@ -68,6 +71,9 @@ class UltrastarTxtTag(str, Enum):
 
 class UltrastarTxtNoteTypeTag(str, Enum):
     """Note types for Ultrastar TXT files."""
+
+    def __str__(self) -> str:
+        return self.value
     NORMAL = ':'
     RAP = 'R'
     RAP_GOLDEN = 'G'

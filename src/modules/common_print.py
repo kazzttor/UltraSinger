@@ -54,7 +54,10 @@ def print_help() -> None:
     --plot                  (plotar) True|False >> ((padrão) é False)
     --format_version        (versão do formato UltraStar) 0.3.0|1.0.0|1.1.0 >> ((padrão) é 1.0.0)
     --musescore_path        local do executável MuseScore
-    
+    --changetone N          gerar uma versão adicional transposta em N semitons
+    --create-lyrics-video   gerar vídeo MP4 com letras sincronizadas
+    --video-background      imagem ou vídeo opcional para o fundo
+
     [dispositivo]
     --force_cpu             True|False >> ((padrão) é False)  Forçar todo o processamento por cpu
     --force_whisper_cpu     True|False >> ((padrão) é False)  Forçar somente processamento do Whisper por cpu

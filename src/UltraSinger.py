@@ -2,6 +2,7 @@
 
 import copy
 import getopt
+import argparse
 import os
 import sys
 import Levenshtein
@@ -62,6 +63,8 @@ from modules.sheet import create_sheet
 from modules.ProcessData import ProcessData, ProcessDataPaths, MediaInfo
 from modules.DeviceDetection.device_detection import check_gpu_support
 from modules.Audio.bpm import get_bpm_from_file
+from modules.Ultrastar.transposition import transpose_ultrastar_file
+from modules.Video.lyrics_video import generate_lyrics_video
 
 from Settings import Settings
 
@@ -260,27 +263,40 @@ def TranscribeAudio(process_data):
 
 
 def CreateUltraStarTxt(process_data: ProcessData):
-    # Move instrumental and vocals
-    if settings.create_karaoke and version.parse(settings.format_version.value) < version.parse(FormatVersion.V1_1_0.value):
-        karaoke_output_path = os.path.join(settings.output_folder_path, f'{process_data.basename}_karaoke.mp3')
+    song_folder = os_helper.create_folder(
+        os.path.join(settings.output_folder_path, process_data.basename)
+    )
+    if settings.create_karaoke:
+        karaoke_output_path = os.path.join(song_folder, f'{process_data.basename}.mp3')
         convert_wav_to_mp3(process_data.process_data_paths.instrumental_audio_file_path, karaoke_output_path)
         settings.audio_output_file_path = karaoke_output_path
 
-    if not settings.ignore_audio:
-        transcribed_data_txt = create_ultrastar_txt_from_automation(process_data.media_info, process_data.transcribed_data,
-                                                                    process_data.pitched_data,
-                                                                    process_data.midi_segments, settings.format_version)
-    else:
-        transcribed_data_txt = create_ultrastar_txt_from_midi_segments(process_data.media_info, process_data.parsed_file,
-                                                                       process_data.midi_segments, settings.format_version)
-
-    # Write Ultrastar txt
-    ultrastar_file_output = os_helper.create_folder(
-        os.path.join(settings.output_folder_path, process_data.basename))
-    ultrastar_file_output = os.path.join(ultrastar_file_output, f'{process_data.basename}.txt')
-    ultrastar_writer.write_to_file(
-        process_data.media_info, transcribed_data_txt, ultrastar_file_output, FILE_ENCODING
+    ultrastar_file_output = create_ultrastar_txt_from_automation(
+        process_data.basename,
+        song_folder,
+        process_data.midi_segments,
+        process_data.media_info,
+        settings.format_version,
+        settings.create_karaoke,
+        settings.APP_VERSION,
     )
+    if settings.changetone:
+        transposed_wav = os.path.join(
+            process_data.process_data_paths.cache_folder_path,
+            "remixes",
+            f"{process_data.basename}_{settings.changetone}.wav",
+        )
+        if not os.path.exists(transposed_wav):
+            raise FileNotFoundError(f"Transposed remix was not created: {transposed_wav}")
+        transposed_basename = f"{process_data.basename} [{settings.changetone:+d} semitones]"
+        transposed_audio = os.path.join(song_folder, transposed_basename + ".mp3")
+        convert_wav_to_mp3(transposed_wav, transposed_audio)
+        transpose_ultrastar_file(
+            ultrastar_file_output,
+            os.path.join(song_folder, transposed_basename + ".txt"),
+            settings.changetone,
+            audio_suffix=f" [{settings.changetone:+d} semitones]",
+        )
     accurate_score, simple_score = calculate_score_points(process_data.pitched_data, process_data.transcribed_data)
 
     return accurate_score, simple_score, ultrastar_file_output
@@ -301,22 +317,19 @@ def CreateProcessAudio(process_data) -> str:
         settings.create_karaoke,
         settings.pytorch_device,
         settings.demucs_model,
-        settings.skip_cache_vocal_separation
+        settings.skip_cache_vocal_separation,
+        settings.changetone or 0,
     )
     process_data.process_data_paths.vocals_audio_file_path = os.path.join(audio_separation_folder_path, "vocals.wav")
     process_data.process_data_paths.instrumental_audio_file_path = os.path.join(audio_separation_folder_path, "no_vocals.wav")
-
-    # Verificar se o parâmetro --changetone foi passado
-    if settings.changetone is not None:
-        # Aplicar a mudança de tom nos arquivos de vocal e instrumental
-        print(f"{ULTRASINGER_HEAD} {blue_highlighted(f'Changing tone by {settings.changetone} semitones')}")
-        process_data.process_data_paths.vocals_audio_file_path = change_pitch(
-            process_data.process_data_paths.vocals_audio_file_path,
-            settings.changetone
-        )
-        process_data.process_data_paths.instrumental_audio_file_path = change_pitch(
-            process_data.process_data_paths.instrumental_audio_file_path,
-            settings.changetone
+    if settings.changetone:
+        remix_name = os.path.splitext(os.path.basename(
+            process_data.process_data_paths.audio_output_file_path
+        ))[0]
+        process_data.process_data_paths.instrumental_audio_file_path = os.path.join(
+            process_data.process_data_paths.cache_folder_path,
+            "remixes",
+            f"{remix_name}_original.wav",
         )
 
     if settings.use_separated_vocal:
@@ -347,7 +360,7 @@ def CreateProcessAudio(process_data) -> str:
 
 
 def parse_args():
-    """Parser para adicionar o parâmetro --changetone"""
+    """Parse options specific to the DarkKaraoke extensions."""
     parser = argparse.ArgumentParser(description="UltraSinger - Geração Automática de Arquivos UltraStar")
 
     # Adicionar outros parâmetros já existentes
@@ -359,6 +372,15 @@ def parse_args():
         help="Muda a tonalidade dos áudios separados (exceto drums) em n semitons",
         required=False,
     )
+    parser.add_argument(
+        "--create-lyrics-video",
+        action="store_true",
+        help="gera vídeos MP4 com letras sincronizadas a partir do arquivo UltraStar",
+    )
+    parser.add_argument(
+        "--video-background",
+        help="imagem ou vídeo opcional usado como plano de fundo",
+    )
 
     args = parser.parse_args()
     return args
@@ -369,12 +391,38 @@ def main():
     args = parse_args()
     
     # Aplicar as configurações com base nos argumentos recebidos
-    settings.changetone = args.changetone if args.changetone else None
+    settings.changetone = args.changetone
+    settings.create_lyrics_video = args.create_lyrics_video
+    settings.video_background = args.video_background
+    if settings.changetone and not settings.create_karaoke:
+        print(f"{ULTRASINGER_HEAD} Transposition requires a playback file; enabling karaoke output.")
+        settings.create_karaoke = True
     
     # Executar o processo principal
     ultrastar_file_output, simple_score, accurate_score = run()
-    
+
+    if settings.create_lyrics_video:
+        basename = process_data_basename(ultrastar_file_output)
+        generate_lyrics_video(
+            ultrastar_file_output,
+            os.path.join(os.path.dirname(ultrastar_file_output), f"{basename}.mp3"),
+            os.path.join(os.path.dirname(ultrastar_file_output), f"{basename}.mp4"),
+            settings.video_background,
+        )
+        if settings.changetone:
+            transposed_basename = f"{basename} [{settings.changetone:+d} semitones]"
+            generate_lyrics_video(
+                os.path.join(os.path.dirname(ultrastar_file_output), transposed_basename + ".txt"),
+                os.path.join(os.path.dirname(ultrastar_file_output), transposed_basename + ".mp3"),
+                os.path.join(os.path.dirname(ultrastar_file_output), transposed_basename + ".mp4"),
+                settings.video_background,
+            )
     print(f"Processamento completo. Arquivo UltraStar salvo em: {ultrastar_file_output}")
+
+
+def process_data_basename(ultrastar_file_output: str) -> str:
+    """Return the song basename without the UltraStar extension."""
+    return os.path.splitext(os.path.basename(ultrastar_file_output))[0]
 
 
 if __name__ == "__main__":
