@@ -1,3 +1,15 @@
+# Unreleased - DarkKaraoke edition
+Date: 2026.09.19
+- Changes:
+  - Added deterministic karaoke playback output without the artist's original vocals.
+  - Added optional transposed playback generation with `--changetone`.
+  - Added four-stem Demucs remixing for transposition, preserving drums while shifting bass and other instruments.
+  - Added matching transposed UltraStar files with shifted note pitches.
+  - Added optional lyrics video generation with synchronized ASS subtitles and FFmpeg.
+  - Added regression tests for transposition and lyrics-video timing.
+- Fix:
+  - Removed stale `[Karaoke]`, vocals, and instrumental references for files that were not exported.
+
 # Version: 0.0.12
 Date: 2024.07.13
 - Changes:

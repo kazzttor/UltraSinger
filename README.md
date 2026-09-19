@@ -16,10 +16,11 @@
 
 > ⚠️ _Este projeto parmanece em desenvolvimento!_
 
-_Este é um fork do projeto UltraSinger que traduz a interface do projeto para português do Brasil e adiciona a possibilidade de criar uma versão do karaoke com notas transposta (ainda em desenvolvimento)._
+_Este é um fork do projeto UltraSinger que traduz a interface do projeto para português do Brasil e adiciona playback de karaoke, transposição opcional e geração de lyrics videos._
 
-UltraSinger é uma ferramenta que cria aytomaticamente UltraStar.txt, midi and notes de uma música. 
-Ele lança automaticamente arquivos UltraStar, adicionando texto e tocando em arquivos UltraStar e cria arquivos de karaokê UltraStar separados.
+UltraSinger é uma ferramenta que cria automaticamente arquivos UltraStar.txt, MIDI e partituras a partir de uma música.
+Ele transcreve a letra, detecta as notas e gera um playback de karaoke sem a voz original do artista.
+Quando solicitado, também cria uma segunda versão transposta da música.
 Ele também pode relançar os arquivos UltraStar atuais e calcular a possível pontuação no jogo.
 
 Vários modelos de IA são usados para extrair texto da voz e determinar o tom.
@@ -151,6 +152,29 @@ mixagem, arquivo UltraStar e áudio com o sufixo `[+N semitones]` (ou `[-N semit
 O Demucs usa quatro fontes nesse modo (`vocals`, `drums`, `bass`, `other`): apenas `bass`
 e `other` recebem pitch shift. `--create-lyrics-video` pode ser combinado com a transposição
 para gerar os dois vídeos, usando FFmpeg instalado no PATH.
+
+O playback padrão não contém os vocais do artista. A voz separada é usada apenas como
+entrada para transcrição e detecção de notas. A saída é organizada por música:
+
+```text
+output/
+└── Artista - Título/
+    ├── Artista - Título.txt
+    ├── Artista - Título.mp3
+    ├── Artista - Título [+2 semitones].txt
+    ├── Artista - Título [+2 semitones].mp3
+    ├── Artista - Título.mp4
+    └── Artista - Título [+2 semitones].mp4
+```
+
+Os arquivos com semitons e vídeos transpostos só são criados quando as opções
+correspondentes são ativadas. Por exemplo:
+
+```commandline
+python src/UltraSinger.py -i "input/music.mp3" --changetone 2
+python src/UltraSinger.py -i "input/music.mp3" --create-lyrics-video
+python src/UltraSinger.py -i "input/music.mp3" --changetone -2 --create-lyrics-video
+```
 
 ### 🎶 Entrada
 
