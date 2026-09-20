@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-requires-python = "3.10"
+requires-python = ">=3.10,<3.13"
 name = "UltraSinger"
 dynamic = ["dependencies", "optional-dependencies"]
 

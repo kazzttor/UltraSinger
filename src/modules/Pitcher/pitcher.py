@@ -1,7 +1,9 @@
 """Pitcher module"""
 import os
 
-import crepe
+import numpy
+import torch
+import torchcrepe
 from scipy.io import wavfile
 
 from modules.console_colors import ULTRASINGER_HEAD, blue_highlighted, red_highlighted
@@ -20,22 +22,46 @@ def get_pitch_with_crepe_file(
     )
     sample_rate, audio = wavfile.read(filename)
 
-    return get_pitch_with_crepe(audio, sample_rate, model_capacity, step_size)
+    return get_pitch_with_crepe(audio, sample_rate, model_capacity, step_size, device)
 
 
 def get_pitch_with_crepe(
-    audio, sample_rate: int, model_capacity: str, step_size: int = 10
+    audio, sample_rate: int, model_capacity: str, step_size: int = 10,
+    device: str = "cpu"
 ) -> PitchedData:
     """Pitch with crepe"""
 
-    # Info: The model is trained on 16 kHz audio, so if the input audio has a different sample rate, it will be first resampled to 16 kHz using resampy inside crepe.
+    # torchcrepe accepts batched floating-point audio and derives the frame
+    # spacing from the hop length.
+    if numpy.issubdtype(audio.dtype, numpy.integer):
+        audio = audio.astype(numpy.float32) / numpy.iinfo(audio.dtype).max
+    else:
+        audio = audio.astype(numpy.float32)
+    if audio.ndim > 1:
+        audio = numpy.mean(audio, axis=1)
 
-    times, frequencies, confidence, activation = crepe.predict(
-        audio, sample_rate, model_capacity, step_size=step_size, viterbi=True
+    hop_length = max(1, round(sample_rate * step_size / 1000))
+    model = "tiny" if model_capacity == "tiny" else "full"
+    audio_tensor = torch.from_numpy(audio).unsqueeze(0)
+    frequencies, confidence = torchcrepe.predict(
+        audio_tensor,
+        sample_rate,
+        hop_length,
+        fmin=50,
+        fmax=2000,
+        model=model,
+        decoder=torchcrepe.decode.viterbi,
+        return_periodicity=True,
+        device=device,
     )
+    frequencies = frequencies.squeeze(0).cpu().numpy()
+    confidence = confidence.squeeze(0).cpu().numpy()
+    times = numpy.arange(len(frequencies), dtype=numpy.float32) * hop_length / sample_rate
 
     # convert to native float for serialization
+    frequencies = [float(x) for x in frequencies]
     confidence = [float(x) for x in confidence]
+    times = [float(x) for x in times]
 
     return PitchedData(times, frequencies, confidence)
 
@@ -57,7 +83,7 @@ def get_pitched_data_with_high_confidence(
 def pitch_each_chunk_with_crepe(directory: str,
                                 crepe_model_capacity: str,
                                 crepe_step_size: int,
-                                tensorflow_device: str) -> list[str]:
+                                pytorch_device: str) -> list[str]:
     """Pitch each chunk with crepe and return midi notes"""
     print(f"{ULTRASINGER_HEAD} Pitching each chunk with {blue_highlighted('crepe')}")
 
@@ -72,7 +98,7 @@ def pitch_each_chunk_with_crepe(directory: str,
             filepath,
             crepe_model_capacity,
             crepe_step_size,
-            tensorflow_device,
+            pytorch_device,
         )
         conf_f = get_frequencies_with_high_confidence(
             pitched_data.frequencies, pitched_data.confidence

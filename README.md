@@ -69,7 +69,7 @@ Para conhecer, apoiar ou contribuir com o projeto inicial, acesse o
 
 ### Instalação
 
-* Instale o Python 3.10 **(Versões anteriores e recentes podem apresentar problemas)**. [Download](https://www.python.org/downloads/)
+* Instale o Python 3.10, 3.11 ou 3.12. [Download](https://www.python.org/downloads/)
 * Instale também ffmpeg separadamente com registro no PATH. [Download](https://www.ffmpeg.org/download.html)
 * Vá para a pasta `install` e execute o script de sistalação de acordo com o Sistema Operacional.
   * Escolha `GPU` se possui uma GPU nvidia CUDA.
@@ -233,7 +233,8 @@ no ponto em que é cantada.
 
 ### 👂 Detecção de notas
 
-A detecção de altura é feita pelo modelo `crepe`.
+A detecção de altura é feita pelo `torchcrepe`, uma implementação PyTorch do modelo
+CREPE.
 Modelos maiores são mais precisos, mas demoram mais. Para testes, use `tiny`;
 para maior precisão, use `full`.
 
@@ -319,29 +320,18 @@ da sua GPU. Instale também o PyTorch com CUDA no ambiente virtual; consulte as
 [instruções do PyTorch](https://pytorch.org/get-started/locally/) e verifique a
 [compatibilidade da sua GPU](https://gist.github.com/standaloneSA/99788f30466516dbcc00338b36ad5acf).
 
-Comando para `pip`:
+Para GPU NVIDIA, substitua os wheels CPU instalados pelo script por:
 ```
-pip3 install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2+cu117 --index-url https://download.pytorch.org/whl/cu117
+pip install torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu126
 ```
 
 Se preferir usar `conda`, consulte o [comando de instalação correspondente](https://pytorch.org/get-started/locally/).
 
 #### Considerações para usuários do Windows
 
-O detector de notas usado pelo UltraSinger (`crepe`) usa o TensorFlow.
-O TensorFlow deixou de oferecer suporte à GPU no Windows em versões posteriores
-à 2.10, conforme as [notas de versão](https://github.com/tensorflow/tensorflow/releases/tag/v2.11.1)
-e as [instruções de instalação](https://www.tensorflow.org/install/pip#windows-native).
-
-Por isso, o UltraSinger usa a versão mais recente que ainda oferece suporte à GPU no Windows.
-
-Para usar versões posteriores do TensorFlow no Windows mantendo o suporte à GPU, a solução
-recomendada é:
-
-* [Instale o WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
-* Na instalação Ubuntu do WSL2:
-  * execute `sudo apt update && sudo apt install nvidia-cuda-toolkit`;
-  * siga as instruções de configuração do UltraSinger no início deste documento.
+O detector de notas usa PyTorch por meio do `torchcrepe`, portanto a mesma stack
+funciona em CPU e CUDA no Windows e no Linux. Não é necessário instalar TensorFlow
+nem usar WSL2 para o processamento em CPU.
 
 #### Informações
 
