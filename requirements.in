@@ -2,7 +2,7 @@
 crepe
 demucs
 ffmpeg_python
-git+https://github.com/m-bain/whisperx.git
+git+https://github.com/m-bain/whisperx.git@v3.1.1
 langcodes
 language-data
 librosa~=0.9.2
