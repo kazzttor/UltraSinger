@@ -419,6 +419,34 @@ def InitProcessData():
     return process_data
 
 
+def infos_from_audio_input_file() -> tuple[str, str, str, MediaInfo]:
+    """Prepare a local audio file for the automatic processing pipeline."""
+    basename = os.path.basename(settings.input_file_path)
+    basename_without_ext = os.path.splitext(basename)[0]
+    song_output = get_unused_song_output_dir(
+        os.path.join(settings.output_folder_path, basename_without_ext)
+    )
+    os_helper.create_folder(song_output)
+    os_helper.copy(settings.input_file_path, song_output)
+
+    audio_file_path = os.path.join(song_output, basename)
+    artist, title = (
+        basename_without_ext.split(" - ", 1)
+        if " - " in basename_without_ext
+        else ("", basename_without_ext)
+    )
+    return (
+        basename_without_ext,
+        song_output,
+        audio_file_path,
+        MediaInfo(
+            artist=artist,
+            title=title,
+            bpm=get_bpm_from_file(audio_file_path),
+        ),
+    )
+
+
 def TranscribeAudio(process_data):
     transcription_result = transcribe_audio(process_data.process_data_paths.cache_folder_path,
                                             process_data.process_data_paths.processing_audio_path)
