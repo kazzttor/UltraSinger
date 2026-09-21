@@ -20,31 +20,164 @@ def parse_bool(value: str) -> bool:
 def _build_argument_parser() -> argparse.ArgumentParser:
     """Build the complete legacy and modern command-line interface."""
     parser = argparse.ArgumentParser(
-        description="UltraSinger - Geração Automática de Arquivos UltraStar"
+        description="UltraSinger - Geração Automática de Arquivos UltraStar",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+UltraSinger.py [opções] [modo] [transcrição] [detecção de notas] [extra]
+
+[opções]
+-h      Exibe este texto de ajuda.
+-i      Dado de entrada: arquivo UltraStar.txt, áudio .mp3/.wav ou link do YouTube.
+-o      Pasta de saída.
+
+[modo]
+O fluxo padrão cria todos os arquivos para uma entrada de áudio ou reprocessa
+o arquivo e o áudio associado quando a entrada é um UltraStar.txt.
+Os modos de criação individual (-u, -m, -s) e de reprocessamento (-r, -p)
+estão em desenvolvimento; atualmente o fluxo completo é executado.
+
+[transcrição]
+--whisper               Modelo multilíngue ou somente em inglês.
+--whisper_align_model   Usar outro modelo de idioma do Hugging Face.
+--language              Forçar o idioma usado nas etapas posteriores.
+--whisper_batch_size    Reduzir se houver pouca memória de GPU (padrão: 16).
+--whisper_compute_type  Usar "int8" em máquinas com pouca memória.
+
+[pitcher]
+--crepe                 Modelo tiny ou full (padrão: full).
+--crepe_step_size       Intervalo em milissegundos (padrão: 10).
+
+[extra]
+--hyphenation           Ativar ou desativar a hifenização.
+--disable_separation    Desabilitar a separação vocal/instrumental.
+--disable_karaoke       Desabilitar a versão karaoke.
+--create_audio_chunks   Criar partes de áudio.
+--keep_cache            Manter os arquivos de cache.
+--plot                  Gerar gráficos do processamento.
+--format_version        Versão do formato UltraStar.
+--musescore_path        Caminho do executável MuseScore.
+--changetone N          Gerar uma versão adicional transposta em N semitons.
+--create-lyrics-video   Gerar vídeo MP4 com letras sincronizadas.
+--video-background      Imagem ou vídeo opcional para o fundo.
+
+[dispositivo]
+--force_cpu             Forçar todo o processamento por CPU.
+--force_whisper_cpu     Forçar somente o Whisper por CPU.
+--force_crepe_cpu       Forçar somente o detector de notas por CPU.
+""",
     )
-    parser.add_argument("-i", "--ifile", dest="input_file_path")
-    parser.add_argument("-o", "--ofile", dest="output_folder_path")
-    parser.add_argument("--whisper")
-    parser.add_argument("--whisper_align_model")
-    parser.add_argument("--language")
-    parser.add_argument("--whisper_batch_size", type=int)
-    parser.add_argument("--whisper_compute_type")
-    parser.add_argument("--crepe")
-    parser.add_argument("--crepe_step_size", type=int)
-    parser.add_argument("--hyphenation", type=parse_bool)
-    parser.add_argument("--disable_separation", type=parse_bool)
-    parser.add_argument("--disable_karaoke", type=parse_bool)
-    parser.add_argument("--create_audio_chunks", type=parse_bool)
-    parser.add_argument("--keep_cache", type=parse_bool)
-    parser.add_argument("--plot", type=parse_bool)
-    parser.add_argument("--format_version", choices=("0.3.0", "1.0.0", "1.1.0"))
-    parser.add_argument("--musescore_path")
-    parser.add_argument("--force_cpu", type=parse_bool)
-    parser.add_argument("--force_whisper_cpu", type=parse_bool)
-    parser.add_argument("--force_crepe_cpu", type=parse_bool)
-    parser.add_argument("--changetone", type=int)
-    parser.add_argument("--create-lyrics-video", action="store_true")
-    parser.add_argument("--video-background")
+    parser.add_argument(
+        "-i", "--ifile", dest="input_file_path",
+        help="Arquivo de entrada: áudio (.mp3/.wav), vídeo ou URL do YouTube.",
+    )
+    parser.add_argument(
+        "-o", "--ofile", dest="output_folder_path",
+        help="Pasta onde os arquivos gerados serão salvos.",
+    )
+    parser.add_argument(
+        "-u", action="store_true",
+        help="Criar arquivo TXT para o UltraStar (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-m", action="store_true",
+        help="Criar arquivo MIDI (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-s", action="store_true",
+        help="Criar partitura (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-r", action="store_true",
+        help="Regerar UltraStar.txt (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-p", action="store_true",
+        help="Verificar as notas do UltraStar.txt fornecido (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "--whisper",
+        help="Modelo Whisper multilíngue ou somente em inglês (padrão: large-v2).",
+    )
+    parser.add_argument(
+        "--whisper_align_model",
+        help="Modelo alternativo de alinhamento de idioma do Hugging Face.",
+    )
+    parser.add_argument(
+        "--language",
+        help="Força o idioma usado nas etapas posteriores à transcrição.",
+    )
+    parser.add_argument(
+        "--whisper_batch_size", type=int,
+        help="Tamanho do lote do Whisper; reduza se houver pouca memória de GPU (padrão: 16).",
+    )
+    parser.add_argument(
+        "--whisper_compute_type",
+        help="Tipo de cálculo do Whisper, por exemplo float16 ou int8.",
+    )
+    parser.add_argument(
+        "--crepe",
+        help="Modelo do detector de notas: tiny ou full (padrão: full).",
+    )
+    parser.add_argument(
+        "--crepe_step_size", type=int,
+        help="Intervalo entre amostras do detector de notas, em milissegundos (padrão: 10).",
+    )
+    parser.add_argument(
+        "--hyphenation", type=parse_bool,
+        help="Ativa ou desativa a hifenização das palavras: True/False (padrão: True).",
+    )
+    parser.add_argument(
+        "--disable_separation", type=parse_bool,
+        help="Desativa a separação vocal/instrumental: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--disable_karaoke", type=parse_bool,
+        help="Desativa a criação da versão karaoke: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--create_audio_chunks", type=parse_bool,
+        help="Cria partes de áudio individuais: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--keep_cache", type=parse_bool,
+        help="Mantém os arquivos temporários de cache: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--plot", type=parse_bool,
+        help="Gera gráficos do processamento: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--format_version", choices=("0.3.0", "1.0.0", "1.1.0"),
+        help="Versão do formato do arquivo UltraStar (padrão: 1.0.0).",
+    )
+    parser.add_argument(
+        "--musescore_path",
+        help="Caminho para o executável do MuseScore.",
+    )
+    parser.add_argument(
+        "--force_cpu", type=parse_bool,
+        help="Força todo o processamento a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--force_whisper_cpu", type=parse_bool,
+        help="Força somente o Whisper a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--force_crepe_cpu", type=parse_bool,
+        help="Força somente o detector de notas a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--changetone", type=int,
+        help="Gera uma versão adicional transposta em N semitons.",
+    )
+    parser.add_argument(
+        "--create-lyrics-video", action="store_true",
+        help="Gera um vídeo MP4 com letras sincronizadas pelas notas UltraStar.",
+    )
+    parser.add_argument(
+        "--video-background",
+        help="Imagem ou vídeo opcional usado como fundo do vídeo de letras.",
+    )
     return parser
 
 
@@ -284,6 +417,34 @@ def InitProcessData():
             process_data.media_info,
         ) = infos_from_audio_input_file()
     return process_data
+
+
+def infos_from_audio_input_file() -> tuple[str, str, str, MediaInfo]:
+    """Prepare a local audio file for the automatic processing pipeline."""
+    basename = os.path.basename(settings.input_file_path)
+    basename_without_ext = os.path.splitext(basename)[0]
+    song_output = get_unused_song_output_dir(
+        os.path.join(settings.output_folder_path, basename_without_ext)
+    )
+    os_helper.create_folder(song_output)
+    os_helper.copy(settings.input_file_path, song_output)
+
+    audio_file_path = os.path.join(song_output, basename)
+    artist, title = (
+        basename_without_ext.split(" - ", 1)
+        if " - " in basename_without_ext
+        else ("", basename_without_ext)
+    )
+    return (
+        basename_without_ext,
+        song_output,
+        audio_file_path,
+        MediaInfo(
+            artist=artist,
+            title=title,
+            bpm=get_bpm_from_file(audio_file_path),
+        ),
+    )
 
 
 def TranscribeAudio(process_data):
