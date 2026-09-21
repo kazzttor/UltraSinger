@@ -46,7 +46,6 @@ class Settings:
 
     # Device
     pytorch_device = 'cpu'  # cpu|cuda
-    tensorflow_device = 'cpu'  # cpu|cuda
     force_cpu = False
     force_whisper_cpu = False
     force_crepe_cpu = False
