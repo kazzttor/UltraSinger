@@ -359,38 +359,102 @@ def CreateProcessAudio(process_data) -> str:
     return mute_output_path
 
 
+def parse_bool(value: str) -> bool:
+    """Parse the explicit True/False values used by the legacy CLI."""
+    normalized = value.lower()
+    if normalized in ("true", "1", "yes"):
+        return True
+    if normalized in ("false", "0", "no"):
+        return False
+    raise argparse.ArgumentTypeError("expected True or False")
+
+
 def parse_args():
-    """Parse options specific to the DarkKaraoke extensions."""
-    parser = argparse.ArgumentParser(description="UltraSinger - Geração Automática de Arquivos UltraStar")
-
-    # Adicionar outros parâmetros já existentes
-
-    # Novo parâmetro --changetone
-    parser.add_argument(
-        "--changetone",
-        type=int,
-        help="Muda a tonalidade dos áudios separados (exceto drums) em n semitons",
-        required=False,
+    """Parse all legacy options and the newer karaoke options."""
+    parser = argparse.ArgumentParser(
+        description="UltraSinger - Geração Automática de Arquivos UltraStar"
     )
-    parser.add_argument(
-        "--create-lyrics-video",
-        action="store_true",
-        help="gera vídeos MP4 com letras sincronizadas a partir do arquivo UltraStar",
-    )
-    parser.add_argument(
-        "--video-background",
-        help="imagem ou vídeo opcional usado como plano de fundo",
-    )
-
-    args = parser.parse_args()
-    return args
+    parser.add_argument("-i", "--ifile", dest="input_file_path")
+    parser.add_argument("-o", "--ofile", dest="output_folder_path")
+    parser.add_argument("--whisper")
+    parser.add_argument("--whisper_align_model")
+    parser.add_argument("--language")
+    parser.add_argument("--whisper_batch_size", type=int)
+    parser.add_argument("--whisper_compute_type")
+    parser.add_argument("--crepe")
+    parser.add_argument("--crepe_step_size", type=int)
+    parser.add_argument("--hyphenation", type=parse_bool)
+    parser.add_argument("--disable_separation", type=parse_bool)
+    parser.add_argument("--disable_karaoke", type=parse_bool)
+    parser.add_argument("--create_audio_chunks", type=parse_bool)
+    parser.add_argument("--keep_cache", type=parse_bool)
+    parser.add_argument("--plot", type=parse_bool)
+    parser.add_argument("--format_version", choices=("0.3.0", "1.0.0", "1.1.0"))
+    parser.add_argument("--musescore_path")
+    parser.add_argument("--force_cpu", type=parse_bool)
+    parser.add_argument("--force_whisper_cpu", type=parse_bool)
+    parser.add_argument("--force_crepe_cpu", type=parse_bool)
+    parser.add_argument("--changetone", type=int)
+    parser.add_argument("--create-lyrics-video", action="store_true")
+    parser.add_argument("--video-background")
+    return parser.parse_args()
 
 
 def main():
     """Função principal para rodar o UltraSinger"""
     args = parse_args()
-    
-    # Aplicar as configurações com base nos argumentos recebidos
+
+    if args.input_file_path is None:
+        print_help()
+        return
+    settings.input_file_path = args.input_file_path
+    if args.output_folder_path is not None:
+        settings.output_folder_path = args.output_folder_path
+    else:
+        settings.output_folder_path = os.path.join(
+            os.path.dirname(args.input_file_path), "output"
+        )
+    if args.whisper is not None:
+        settings.whisper_model = args.whisper
+    if args.whisper_align_model is not None:
+        settings.whisper_align_model = args.whisper_align_model
+    if args.language is not None:
+        settings.language = args.language
+    if args.whisper_batch_size is not None:
+        settings.whisper_batch_size = args.whisper_batch_size
+    if args.whisper_compute_type is not None:
+        settings.whisper_compute_type = args.whisper_compute_type
+    if args.crepe is not None:
+        settings.crepe_model_capacity = args.crepe
+    if args.crepe_step_size is not None:
+        settings.crepe_step_size = args.crepe_step_size
+    if args.hyphenation is not None:
+        settings.hyphenation = args.hyphenation
+    if args.disable_separation is not None:
+        settings.use_separated_vocal = not args.disable_separation
+    if args.disable_karaoke is not None:
+        settings.create_karaoke = not args.disable_karaoke
+    if args.create_audio_chunks is not None:
+        settings.create_audio_chunks = args.create_audio_chunks
+    if args.keep_cache is not None:
+        settings.keep_cache = args.keep_cache
+    if args.plot is not None:
+        settings.create_plot = args.plot
+    if args.format_version is not None:
+        settings.format_version = FormatVersion(args.format_version)
+    if args.musescore_path is not None:
+        settings.musescore_path = args.musescore_path
+    if args.force_cpu is not None:
+        settings.force_cpu = args.force_cpu
+        if args.force_cpu:
+            settings.pytorch_device = "cpu"
+    if not settings.force_cpu:
+        settings.pytorch_device, _ = check_gpu_support()
+    if args.force_whisper_cpu is not None:
+        settings.force_whisper_cpu = args.force_whisper_cpu
+    if args.force_crepe_cpu is not None:
+        settings.force_crepe_cpu = args.force_crepe_cpu
+
     settings.changetone = args.changetone
     settings.create_lyrics_video = args.create_lyrics_video
     settings.video_background = args.video_background

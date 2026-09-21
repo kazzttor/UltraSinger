@@ -1,10 +1,10 @@
 # requirements.in
 demucs==4.1.0
 ffmpeg_python
-whisperx==3.7.9
+whisperx
 torchcrepe==0.0.24
-torch==2.8.0
-torchaudio==2.8.0
+torch>=2.8,<2.9
+torchaudio>=2.8,<2.9
 pyannote-audio==3.3.2
 faster-whisper==1.2.1
 ctranslate2==4.8.2
@@ -24,7 +24,7 @@ scipy~=1.14.1
 soundfile
 tqdm
 #whisperx
-yt_dlp
+yt-dlp
 isort
 black
 pylint
