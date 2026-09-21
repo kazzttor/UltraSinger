@@ -5,6 +5,52 @@ import getopt
 import argparse
 import os
 import sys
+
+
+def parse_bool(value: str) -> bool:
+    """Parse the explicit True/False values used by the legacy CLI."""
+    normalized = value.lower()
+    if normalized in ("true", "1", "yes"):
+        return True
+    if normalized in ("false", "0", "no"):
+        return False
+    raise argparse.ArgumentTypeError("expected True or False")
+
+
+def _build_argument_parser() -> argparse.ArgumentParser:
+    """Build the complete legacy and modern command-line interface."""
+    parser = argparse.ArgumentParser(
+        description="UltraSinger - Geração Automática de Arquivos UltraStar"
+    )
+    parser.add_argument("-i", "--ifile", dest="input_file_path")
+    parser.add_argument("-o", "--ofile", dest="output_folder_path")
+    parser.add_argument("--whisper")
+    parser.add_argument("--whisper_align_model")
+    parser.add_argument("--language")
+    parser.add_argument("--whisper_batch_size", type=int)
+    parser.add_argument("--whisper_compute_type")
+    parser.add_argument("--crepe")
+    parser.add_argument("--crepe_step_size", type=int)
+    parser.add_argument("--hyphenation", type=parse_bool)
+    parser.add_argument("--disable_separation", type=parse_bool)
+    parser.add_argument("--disable_karaoke", type=parse_bool)
+    parser.add_argument("--create_audio_chunks", type=parse_bool)
+    parser.add_argument("--keep_cache", type=parse_bool)
+    parser.add_argument("--plot", type=parse_bool)
+    parser.add_argument("--format_version", choices=("0.3.0", "1.0.0", "1.1.0"))
+    parser.add_argument("--musescore_path")
+    parser.add_argument("--force_cpu", type=parse_bool)
+    parser.add_argument("--force_whisper_cpu", type=parse_bool)
+    parser.add_argument("--force_crepe_cpu", type=parse_bool)
+    parser.add_argument("--changetone", type=int)
+    parser.add_argument("--create-lyrics-video", action="store_true")
+    parser.add_argument("--video-background")
+    return parser
+
+
+if __name__ == "__main__" and ("-h" in sys.argv or "--help" in sys.argv):
+    _build_argument_parser().parse_args()
+
 import Levenshtein
 
 from packaging import version
@@ -359,45 +405,9 @@ def CreateProcessAudio(process_data) -> str:
     return mute_output_path
 
 
-def parse_bool(value: str) -> bool:
-    """Parse the explicit True/False values used by the legacy CLI."""
-    normalized = value.lower()
-    if normalized in ("true", "1", "yes"):
-        return True
-    if normalized in ("false", "0", "no"):
-        return False
-    raise argparse.ArgumentTypeError("expected True or False")
-
-
 def parse_args():
     """Parse all legacy options and the newer karaoke options."""
-    parser = argparse.ArgumentParser(
-        description="UltraSinger - Geração Automática de Arquivos UltraStar"
-    )
-    parser.add_argument("-i", "--ifile", dest="input_file_path")
-    parser.add_argument("-o", "--ofile", dest="output_folder_path")
-    parser.add_argument("--whisper")
-    parser.add_argument("--whisper_align_model")
-    parser.add_argument("--language")
-    parser.add_argument("--whisper_batch_size", type=int)
-    parser.add_argument("--whisper_compute_type")
-    parser.add_argument("--crepe")
-    parser.add_argument("--crepe_step_size", type=int)
-    parser.add_argument("--hyphenation", type=parse_bool)
-    parser.add_argument("--disable_separation", type=parse_bool)
-    parser.add_argument("--disable_karaoke", type=parse_bool)
-    parser.add_argument("--create_audio_chunks", type=parse_bool)
-    parser.add_argument("--keep_cache", type=parse_bool)
-    parser.add_argument("--plot", type=parse_bool)
-    parser.add_argument("--format_version", choices=("0.3.0", "1.0.0", "1.1.0"))
-    parser.add_argument("--musescore_path")
-    parser.add_argument("--force_cpu", type=parse_bool)
-    parser.add_argument("--force_whisper_cpu", type=parse_bool)
-    parser.add_argument("--force_crepe_cpu", type=parse_bool)
-    parser.add_argument("--changetone", type=int)
-    parser.add_argument("--create-lyrics-video", action="store_true")
-    parser.add_argument("--video-background")
-    return parser.parse_args()
+    return _build_argument_parser().parse_args()
 
 
 def main():
