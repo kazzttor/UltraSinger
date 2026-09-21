@@ -20,7 +20,51 @@ def parse_bool(value: str) -> bool:
 def _build_argument_parser() -> argparse.ArgumentParser:
     """Build the complete legacy and modern command-line interface."""
     parser = argparse.ArgumentParser(
-        description="UltraSinger - Geração Automática de Arquivos UltraStar"
+        description="UltraSinger - Geração Automática de Arquivos UltraStar",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+UltraSinger.py [opções] [modo] [transcrição] [detecção de notas] [extra]
+
+[opções]
+-h      Exibe este texto de ajuda.
+-i      Dado de entrada: arquivo UltraStar.txt, áudio .mp3/.wav ou link do YouTube.
+-o      Pasta de saída.
+
+[modo]
+O fluxo padrão cria todos os arquivos para uma entrada de áudio ou reprocessa
+o arquivo e o áudio associado quando a entrada é um UltraStar.txt.
+Os modos de criação individual (-u, -m, -s) e de reprocessamento (-r, -p)
+estão em desenvolvimento; atualmente o fluxo completo é executado.
+
+[transcrição]
+--whisper               Modelo multilíngue ou somente em inglês.
+--whisper_align_model   Usar outro modelo de idioma do Hugging Face.
+--language              Forçar o idioma usado nas etapas posteriores.
+--whisper_batch_size    Reduzir se houver pouca memória de GPU (padrão: 16).
+--whisper_compute_type  Usar "int8" em máquinas com pouca memória.
+
+[pitcher]
+--crepe                 Modelo tiny ou full (padrão: full).
+--crepe_step_size       Intervalo em milissegundos (padrão: 10).
+
+[extra]
+--hyphenation           Ativar ou desativar a hifenização.
+--disable_separation    Desabilitar a separação vocal/instrumental.
+--disable_karaoke       Desabilitar a versão karaoke.
+--create_audio_chunks   Criar partes de áudio.
+--keep_cache            Manter os arquivos de cache.
+--plot                  Gerar gráficos do processamento.
+--format_version        Versão do formato UltraStar.
+--musescore_path        Caminho do executável MuseScore.
+--changetone N          Gerar uma versão adicional transposta em N semitons.
+--create-lyrics-video   Gerar vídeo MP4 com letras sincronizadas.
+--video-background      Imagem ou vídeo opcional para o fundo.
+
+[dispositivo]
+--force_cpu             Forçar todo o processamento por CPU.
+--force_whisper_cpu     Forçar somente o Whisper por CPU.
+--force_crepe_cpu       Forçar somente o detector de notas por CPU.
+""",
     )
     parser.add_argument(
         "-i", "--ifile", dest="input_file_path",
@@ -29,6 +73,26 @@ def _build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-o", "--ofile", dest="output_folder_path",
         help="Pasta onde os arquivos gerados serão salvos.",
+    )
+    parser.add_argument(
+        "-u", action="store_true",
+        help="Criar arquivo TXT para o UltraStar (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-m", action="store_true",
+        help="Criar arquivo MIDI (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-s", action="store_true",
+        help="Criar partitura (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-r", action="store_true",
+        help="Regerar UltraStar.txt (em desenvolvimento).",
+    )
+    parser.add_argument(
+        "-p", action="store_true",
+        help="Verificar as notas do UltraStar.txt fornecido (em desenvolvimento).",
     )
     parser.add_argument(
         "--whisper",
