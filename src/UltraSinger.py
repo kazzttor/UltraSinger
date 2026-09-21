@@ -22,29 +22,98 @@ def _build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="UltraSinger - Geração Automática de Arquivos UltraStar"
     )
-    parser.add_argument("-i", "--ifile", dest="input_file_path")
-    parser.add_argument("-o", "--ofile", dest="output_folder_path")
-    parser.add_argument("--whisper")
-    parser.add_argument("--whisper_align_model")
-    parser.add_argument("--language")
-    parser.add_argument("--whisper_batch_size", type=int)
-    parser.add_argument("--whisper_compute_type")
-    parser.add_argument("--crepe")
-    parser.add_argument("--crepe_step_size", type=int)
-    parser.add_argument("--hyphenation", type=parse_bool)
-    parser.add_argument("--disable_separation", type=parse_bool)
-    parser.add_argument("--disable_karaoke", type=parse_bool)
-    parser.add_argument("--create_audio_chunks", type=parse_bool)
-    parser.add_argument("--keep_cache", type=parse_bool)
-    parser.add_argument("--plot", type=parse_bool)
-    parser.add_argument("--format_version", choices=("0.3.0", "1.0.0", "1.1.0"))
-    parser.add_argument("--musescore_path")
-    parser.add_argument("--force_cpu", type=parse_bool)
-    parser.add_argument("--force_whisper_cpu", type=parse_bool)
-    parser.add_argument("--force_crepe_cpu", type=parse_bool)
-    parser.add_argument("--changetone", type=int)
-    parser.add_argument("--create-lyrics-video", action="store_true")
-    parser.add_argument("--video-background")
+    parser.add_argument(
+        "-i", "--ifile", dest="input_file_path",
+        help="Arquivo de entrada: áudio (.mp3/.wav), vídeo ou URL do YouTube.",
+    )
+    parser.add_argument(
+        "-o", "--ofile", dest="output_folder_path",
+        help="Pasta onde os arquivos gerados serão salvos.",
+    )
+    parser.add_argument(
+        "--whisper",
+        help="Modelo Whisper multilíngue ou somente em inglês (padrão: large-v2).",
+    )
+    parser.add_argument(
+        "--whisper_align_model",
+        help="Modelo alternativo de alinhamento de idioma do Hugging Face.",
+    )
+    parser.add_argument(
+        "--language",
+        help="Força o idioma usado nas etapas posteriores à transcrição.",
+    )
+    parser.add_argument(
+        "--whisper_batch_size", type=int,
+        help="Tamanho do lote do Whisper; reduza se houver pouca memória de GPU (padrão: 16).",
+    )
+    parser.add_argument(
+        "--whisper_compute_type",
+        help="Tipo de cálculo do Whisper, por exemplo float16 ou int8.",
+    )
+    parser.add_argument(
+        "--crepe",
+        help="Modelo do detector de notas: tiny ou full (padrão: full).",
+    )
+    parser.add_argument(
+        "--crepe_step_size", type=int,
+        help="Intervalo entre amostras do detector de notas, em milissegundos (padrão: 10).",
+    )
+    parser.add_argument(
+        "--hyphenation", type=parse_bool,
+        help="Ativa ou desativa a hifenização das palavras: True/False (padrão: True).",
+    )
+    parser.add_argument(
+        "--disable_separation", type=parse_bool,
+        help="Desativa a separação vocal/instrumental: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--disable_karaoke", type=parse_bool,
+        help="Desativa a criação da versão karaoke: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--create_audio_chunks", type=parse_bool,
+        help="Cria partes de áudio individuais: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--keep_cache", type=parse_bool,
+        help="Mantém os arquivos temporários de cache: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--plot", type=parse_bool,
+        help="Gera gráficos do processamento: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--format_version", choices=("0.3.0", "1.0.0", "1.1.0"),
+        help="Versão do formato do arquivo UltraStar (padrão: 1.0.0).",
+    )
+    parser.add_argument(
+        "--musescore_path",
+        help="Caminho para o executável do MuseScore.",
+    )
+    parser.add_argument(
+        "--force_cpu", type=parse_bool,
+        help="Força todo o processamento a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--force_whisper_cpu", type=parse_bool,
+        help="Força somente o Whisper a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--force_crepe_cpu", type=parse_bool,
+        help="Força somente o detector de notas a usar CPU: True/False (padrão: False).",
+    )
+    parser.add_argument(
+        "--changetone", type=int,
+        help="Gera uma versão adicional transposta em N semitons.",
+    )
+    parser.add_argument(
+        "--create-lyrics-video", action="store_true",
+        help="Gera um vídeo MP4 com letras sincronizadas pelas notas UltraStar.",
+    )
+    parser.add_argument(
+        "--video-background",
+        help="Imagem ou vídeo opcional usado como fundo do vídeo de letras.",
+    )
     return parser
 
 
